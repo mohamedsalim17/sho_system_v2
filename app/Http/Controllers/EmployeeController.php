@@ -1,44 +1,41 @@
 <?php
-
 namespace App\Http\Controllers;
-
-use App\Models\Employee;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 class EmployeeController extends Controller
 {
-    // بعرض صفحة الفورم
-    public function create()
-    {
+    public function create(){
         return view('employees.create');
     }
 
-    // بحفظ البيانات
-    public function store(Request $request)
-    {
-        // 1. شيل الاقارب برا
-        $data = $request->except('relatives');
+    public function store(Request $request){
 
-        // 2. احفظ الموظف
-        $employee = Employee::create($data);
-
-        // 3. احفظ الاقارب
-        if($request->has('relatives')){
-            foreach($request->relatives as $relative){
-                if(!empty($relative['name'])){ 
-                    $employee->relatives()->create($relative);
-                }
-            }
+        // تحويل الحالة من عربي لانجليزي عشان الجدول
+        $marital = 'single';
+        if(in_array($request->marital_status, ['متزوج','married'])){
+            $marital = 'married';
         }
 
-        return redirect()->route('employees.create')->with('success', 'تم حفظ الموظف بنجاح');
-    }
+        \DB::table('employees')->insert([
+            'employee_no'    => $request->employee_no, // لازم
+            'national_id'    => $request->national_id,
+            'name'           => $request->name, // لازم
+            'phone'          => $request->phone,
+            'birth_date'     => $request->birth_date ?: null,
+            'hire_date'      => $request->hire_date ?: null,
+            'death_date'     => $request->death_date ?: null,
+            'marital_status' => $marital, // هنا كان الخلل
+            'job_title'      => $request->job_title,
+            'department'     => $request->department,
+            'salary'         => $request->salary ?: null,
+            'state'          => $request->state ?? null,
+            'city'           => $request->city ?? null,
+            'neighborhood'   => $request->neighborhood ?? null,
+            'street'         => $request->street ?? null,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
 
-    // لعرض كل الموظفين
-    public function index()
-    {
-        $employees = Employee::with('relatives')->latest()->get();
-        return view('employees.index', compact('employees'));
+        return back()->with('success','تم حفظ الموظف بنجاح');
     }
 }
