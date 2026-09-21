@@ -2,7 +2,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
-class Relative extends Model
+class EmployeeRelative extends Model
 {
     protected $guarded = [];
 }
