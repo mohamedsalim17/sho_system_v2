@@ -9,7 +9,7 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = Customer::all();
+        $customers = Customer::latest()->paginate(10);
         return view('customers.index', compact('customers'));
     }
 
@@ -20,74 +20,69 @@ class CustomerController extends Controller
 public function store(Request $request)
 {
     $request->validate([
-        'name' => 'required',
+        'name' => 'required|unique:customers,name',
+        'phone' => 'nullable|unique:customers,phone',
         'national_id' => 'nullable|unique:customers,national_id',
-        'phone' => 'nullable',
-        'gender' => 'nullable',
-        'birth_date' => 'nullable|date|before:today',
-        'date_of_death' => 'nullable|date|before:today',
+    ], [
+        'name.required' => 'الاسم مطلوب',
+        'name.unique' => 'هذا الاسم موجود مسبقا',
+        'phone.unique' => 'رقم الهاتف موجود مسبقا',
+        'national_id.unique' => 'الرقم الوطني موجود مسبقا',
     ]);
 
-    $customer = new Customer();
-    $customer->name = $request->name;
-    $customer->phone = $request->phone ?? null;
-    $customer->national_id = $request->national_id ?? null;
-    $customer->gender = $request->gender ?? null;
-    $customer->birth_date = $request->birth_date ?? null;
-    $customer->city = $request->city ?? null;
-    $customer->state = $request->state ?? null;
-    $customer->education_level = $request->education_level ?? null;
-    $customer->job = $request->job ?? null;
-    $customer->date_of_death = $request->date_of_death ?? null; // تاريخ الوفاة
-    $customer->place_of_death = $request->place_of_death ?? null; // مكان الوفاة
-    $customer->address = $request->address ?? null;
-    $customer->save();
 
-    return redirect()->route('customers.index')->with('success','تم الحفظ');
-}
+        $customer = new Customer();
+        $customer->name = $request->name;
+        $customer->phone = $request->phone;
+        $customer->gender = $request->gender;
+        $customer->birth_date = $request->birth_date;
+        $customer->national_id = $request->national_id;
+        $customer->job = $request->job;
+        $customer->education_level = $request->education_level;
+        $customer->state = $request->state;
+        $customer->city = $request->city;
+        $customer->address = $request->address;
+        $customer->date_of_death = $request->date_of_death;
+        $customer->place_of_death = $request->place_of_death;
+        $customer->save();
+
+        return redirect()->route('customers.index')->with('success', 'تم الحفظ');
+    }
 
     public function edit(Customer $customer)
     {
         return view('customers.edit', compact('customer'));
     }
-public function update(Request $request,Customer $customer)
-{
-   
-    $request->validate([
-        'name' => 'required',
-        'national_id' => 'nullable|unique:customers,national_id',
-        'phone' => 'nullable',
-        'gender' => 'nullable',
-        'birth_date' => 'nullable|date|before:today',
-        'date_of_death' => 'nullable|date|before:today',
-    ]);
 
-    $customer = new Customer();
-    $customer->name = $request->name;
-    $customer->phone = $request->phone ?? null;
-    $customer->national_id = $request->national_id ?? null;
-    $customer->gender = $request->gender ?? null;
-    $customer->birth_date = $request->birth_date ?? null;
-    $customer->city = $request->city ?? null;
-    $customer->state = $request->state ?? null;
-    $customer->education_level = $request->education_level ?? null;
-    $customer->job = $request->job ?? null;
-    $customer->date_of_death = $request->date_of_death ?? null; // تاريخ الوفاة
-    $customer->place_of_death = $request->place_of_death ?? null; // مكان الوفاة
-    $customer->address = $request->address ?? null;
-    $customer->save();
+    public function update(Request $request, Customer $customer)
+    {
+        $request->validate([
+            'name' => 'required|unique:customers,name,' . $customer->id,
+        ], [
+            'name.required' => 'الاسم مطلوب',
+            'name.unique' => 'هذا الاسم موجود مسبقاً',
+        ]);
 
-    $customer->route('customer.index')->with('success','تم التعديل ');
-}
+        $customer->name = $request->name;
+        $customer->phone = $request->phone;
+        $customer->gender = $request->gender;
+        $customer->birth_date = $request->birth_date;
+        $customer->national_id = $request->national_id;
+        $customer->job = $request->job;
+        $customer->education_level = $request->education_level;
+        $customer->state = $request->state;
+        $customer->city = $request->city;
+        $customer->address = $request->address;
+        $customer->date_of_death = $request->date_of_death;
+        $customer->place_of_death = $request->place_of_death;
+        $customer->save();
+
+        return redirect()->route('customers.index')->with('success', 'تم التعديل');
+    }
 
     public function destroy(Customer $customer)
     {
         $customer->delete();
-        return redirect()->route('customers.index')->with('success', 'تم الحذف بنجاح');
-    }
-
-    public function show(Customer $customer)
-    {
-        return redirect()->route('customers.index');
+        return redirect()->route('customers.index')->with('success', 'تم الحذف');
     }
 }
