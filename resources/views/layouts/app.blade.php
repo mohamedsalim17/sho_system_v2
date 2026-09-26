@@ -3,23 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام الفواتير</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<title>نظام الموظفين</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#FDF6EC;font-family:Tahoma; text-align:right}
+.nav{background:#A8C3B5;color:#fff;padding:14px 28px;display:flex;justify-content:space-between;align-items:center}
+.nav a{color:#2C3E3A;text-decoration:none;margin-left:20px;font-weight:bold}
+.container{padding:25px}
+</style>
 </head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="/">نظام الفواتير</a>
-    <div>
-      <a href="{{ route('products.index') }}" class="btn btn-outline-light btn-sm">المنتجات</a>
-      <a href="{{ route('customers.index') }}" class="btn btn-outline-light btn-sm">العملاء</a>
-      <a href="{{ route('invoices.index') }}" class="btn btn-outline-light btn-sm">الفواتير</a>
-    </div>
+<body>
+<div class="nav">
+  <div>نظام الموظفين</div>
+  <div>
+    <a href="/employees">الموظفون</a>
+    <a href="/dashboard">الرئيسية</a>
   </div>
-</nav>
-<main>
-@yield('content')
-</main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+<div class="container">
+  @yield('content')
+</div>
+
 </body>
 </html>

@@ -1,94 +1,60 @@
-@extends('layouts.app') {{-- لو عندك لاي اوت --}}
-
+@extends('layouts.app')
 @section('content')
-<div class="container mt-4" dir="rtl">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h4>اضافة موظف جديد</h4>
-        </div>
-        <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
-            <form method="POST" action="{{ route('employees.store') }}">
-            @csrf
-
-            <h5 class="text-primary border-bottom pb-2 mb-3">البيانات الاساسية</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">الرقم الوظيفي *</label>
-                    <input type="text" name="employee_no" class="form-control" required>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">الرقم الوطني</label>
-                    <input type="text" name="national_id" class="form-control">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">الاسم الكامل *</label>
-                    <input type="text" name="name" class="form-control" required>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">تاريخ الميلاد</label>
-                    <input type="date" name="birth_date" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">تاريخ التعيين</label>
-                    <input type="date" name="hire_date" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">تاريخ الوفاة</label>
-                    <input type="date" name="death_date" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">الحالة الاجتماعية</label>
-                    <select name="marital_status" class="form-select">
-                        <option value="">اختر</option>
-                        <option value="اعزب">اعزب</option>
-                        <option value="متزوج">متزوج</option>
-                        <option value="مطلق">مطلق</option>
-                        <option value="ارمل">ارمل</option>
-                    </select>
-                </div>
-            </div>
-
-            <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">بيانات العمل</h5>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">الوظيفة</label>
-                    <input type="text" name="job_title" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">القسم</label>
-                    <input type="text" name="department" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">الراتب</label>
-                    <input type="number" name="salary" class="form-control">
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label">الهاتف</label>
-                    <input type="text" name="phone" class="form-control">
-                </div>
-            </div>
-
-            <h5 class="text
-<div class="card-footer bg-dark text-white d-flex justify-content-between align-items-center mt-4">
-    
-    <!-- الازرار اليسار -->
-    <div>
-        <button type="button" class="btn btn-outline-light btn-sm">المنتجات</button>
-        <button type="button" class="btn btn-outline-light btn-sm">الاتصال</button>
-        <button type="button" class="btn btn-outline-light btn-sm">الفواتير</button>
-    </div>
-
-    <!-- زر الحفظ اليمين -->
-    <div>
-        <button type="submit" class="btn btn-primary">
-            💾 حفظ الموظف
-        </button>
-        <a href="{{ route('employees.index') }}" class="btn btn-secondary">الغاء</a>
-    </div>
-
+@if(session('success'))
+<div style="position:fixed; top:15px; left:0; right:0; display:flex; justify-content:center; z-index:99999; pointer-events:none;">
+  <div style="pointer-events:auto; background:#10b981; color:white; padding:12px 24px; border-radius:30px; font-weight:bold;">
+    ✓ {{ session('success') }}
+  </div>
 </div>
+@endif
+
+<div dir="rtl" style="background:#FDF6EC; min-height:100vh; font-family:Cairo, sans-serif">
+  
+  <div style="background:#A8C3B5; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; color:#2C3E3A">
+    <h2 style="margin:0">تعبئة المعلومات الأساسية</h2>
+    <div>
+      <button style="background:#5B9BD5; color:white; border:none; padding:8px 18px; border-radius:8px; margin-left:10px">🔵 تعديل</button>
+      <button style="background:#E74C3C; color:white; border:none; padding:8px 18px; border-radius:8px">🔴 حذف</button>
+    </div>
+  </div>
+
+  <div style="display:flex">
+    {{-- القائمة يمين --}}
+    <div style="width:220px; background:#FDF6EC; padding:20px; border-left:1px solid #E0D5C0">
+      <p style="font-weight:bold">القائمة الرئيسية</p>
+      <ul style="list-style:none; padding:0; line-height:2.2">
+        <li>🏠 الرئيسية</li>
+        <li>👥 الموظفون</li>
+        <li>📄 العقود</li>
+        <li>💰 الرواتب</li>
+      </ul>
+    </div>
+
+       <form action="{{ route('employees.store') }}" method="POST" style="background:#FFFBF5; padding:30px; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.05)">
+        @csrf
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+          <div><label>الرقم الوطني</label><input type="text" name="national_id" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>رقم الموظف</label><input type="text" name="employee_number" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>الاسم كامل</label><input type="text" name="name" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>رقم الجوال</label><input type="text" name="phone" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>تاريخ الميلاد</label><input type="date" name="birth_date" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>تاريخ الوفاة</label><input type="date" name="death_date" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>الحالة الاجتماعية</label><select name="marital_status" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"><option>أعزب</option><option>متزوج</option></select></div>
+          <div><label>المسمى الوظيفي</label><input type="text" name="job_title" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>القسم</label><input type="text" name="department" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>الراتب</label><input type="number" name="salary" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>تاريخ التعيين</label><input type="date" name="hire_date" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>الولاية</label><input type="text" name="state" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>المدينة</label><input type="text" name="city" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>الحي</label><input type="text" name="district" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+          <div><label>الشارع</label><input type="text" name="street" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D9CFC0"></div>
+        </div>
+        <div style="margin-top:30px; display:flex; gap:15px">
+          <button type="submit" style="background:#A8C3B5; color:#2C3E3A; border:none; padding:12px 30px; border-radius:10px; font-weight:bold">حفظ البيانات</button>
+          <a href="/employees" style="background:#E0D5C0; padding:12px 30px; border-radius:10px; text-decoration:none; color:#333">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+@endsection

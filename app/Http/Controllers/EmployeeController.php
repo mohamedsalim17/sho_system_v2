@@ -1,41 +1,45 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
+use App\Models\Employee;
+use App\Models\EmployeeRelative;
 
 class EmployeeController extends Controller
 {
-    public function create(){
-        return view('employees.create');
+    public function index(){
+        $employees = Employee::all();
+        return view('employees.index', compact('employees'));
     }
 
-    public function store(Request $request){
+    public function store(Request $r){
+        $data = $r->all();
+        Employee::create($data);
+        return back()->with('success','تم الحفظ');
+    }
 
-        // تحويل الحالة من عربي لانجليزي عشان الجدول
-        $marital = 'single';
-        if(in_array($request->marital_status, ['متزوج','married'])){
-            $marital = 'married';
-        }
+    public function edit($id){
+        $employee = Employee::findOrFail($id);
+        return view('employees.edit', compact('employee'));
+    }
 
-        \DB::table('employees')->insert([
-            'employee_no'    => $request->employee_no, // لازم
-            'national_id'    => $request->national_id,
-            'name'           => $request->name, // لازم
-            'phone'          => $request->phone,
-            'birth_date'     => $request->birth_date ?: null,
-            'hire_date'      => $request->hire_date ?: null,
-            'death_date'     => $request->death_date ?: null,
-            'marital_status' => $marital, // هنا كان الخلل
-            'job_title'      => $request->job_title,
-            'department'     => $request->department,
-            'salary'         => $request->salary ?: null,
-            'state'          => $request->state ?? null,
-            'city'           => $request->city ?? null,
-            'neighborhood'   => $request->neighborhood ?? null,
-            'street'         => $request->street ?? null,
-            'created_at'     => now(),
-            'updated_at'     => now(),
-        ]);
+    public function update(Request $r, $id){
+        $employee = Employee::findOrFail($id);
+        $employee->update($r->all());
+        return redirect()->route('employees.index')->with('success','تم التعديل بنجاح');
+    }
 
-        return back()->with('success','تم حفظ الموظف بنجاح');
+    public function destroy($id){
+        Employee::findOrFail($id)->delete();
+        return back()->with('success','تم الحذف');
+    }
+
+    public function relatives($id){
+        $emp = Employee::with('relatives')->findOrFail($id);
+        return view('employees.relatives', compact('emp'));
+    }
+
+    public function relativesStore(Request $r, $id){
+        EmployeeRelative::create(array_merge($r->all(), ['employee_id'=>$id]));
+        return back()->with('success','تم حفظ القريب');
     }
 }

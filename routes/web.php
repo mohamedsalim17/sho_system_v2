@@ -1,18 +1,18 @@
 <?php
-
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
- 
+use Illuminate\Support\Facades\Route;
 
-Route::resource('products', ProductController::class);
-Route::resource('customers', CustomerController::class)->except(['show']);
-Route::resource('invoices', InvoiceController::class);
-Route::resource('employees', EmployeeController::class);
-Route::get('/employees/create', [EmployeeController::class, 'create']);
+Route::get('/dashboard', function () {
+    return redirect('/employees');
+})->name('dashboard');
+
+Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+Route::get('/employees/{id}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
 Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');
+Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
+Route::post('/employees/{id}/relatives', [EmployeeController::class, 'relativesStore'])->name('employees.relativesStore');
 
-
-
+// عشان التصميم الجديد ما يقع تاني
+Route::get('/products', function(){ return redirect('/employees'); })->name('products.index');
