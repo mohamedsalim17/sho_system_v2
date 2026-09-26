@@ -1,0 +1,52 @@
+@extends('layouts.main')
+@section('content')
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+<div>
+<h2 style="font-size:32px;color:#111">لوحة التحكم</h2>
+<p style="color:#6d614f;margin-top:4px">مرحبا بك - النظام شغال | 26-09-2026</p>
+</div>
+<a href="/invoices/create" style="background:#111;color:#e9d7b0;padding:13px 22px;border-radius:14px;text-decoration:none;font-weight:800">+ إنشاء فاتورة</a>
+</div>
+
+{{-- 4 كروت نظيفة --}}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+<div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
+<h1 style="font-size:42px">{{$employees}}</h1><p style="color:#8a7d65;margin-top:4px">الموظفون</p>
+<a href="/employees" style="display:block;margin-top:14px;background:#f6f0e2;padding:9px;border-radius:10px;text-decoration:none;color:#111;font-weight:700;font-size:14px">إدارة الموظفون</a>
+</div>
+<div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
+<h1 style="font-size:42px">{{$customers}}</h1><p style="color:#8a7d65;margin-top:4px">العملاء</p>
+<a href="/customers" style="display:block;margin-top:14px;background:#f6f0e2;padding:9px;border-radius:10px;text-decoration:none;color:#111;font-weight:700;font-size:14px">إدارة العملاء</a>
+</div>
+<div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
+<h1 style="font-size:42px">{{$products}}</h1><p style="color:#8a7d65;margin-top:4px">الأصناف</p>
+<a href="/products" style="display:block;margin-top:14px;background:#f6f0e2;padding:9px;border-radius:10px;text-decoration:none;color:#111;font-weight:700;font-size:14px">إدارة الأصناف</a>
+</div>
+<div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
+<h1 style="font-size:42px">{{$invoices}}</h1><p style="color:#8a7d65;margin-top:4px">الفواتير</p>
+<a href="/invoices" style="display:block;margin-top:14px;background:#111;color:#e9d7b0;padding:9px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">عرض الفواتير</a>
+</div>
+</div>
+
+{{-- شريط اجراءات واحد مرتب بلون واحد --}}
+<div style="background:#fff;border-radius:18px;padding:18px 20px;margin-top:22px;display:flex;gap:10px;align-items:center">
+<span style="font-weight:800;color:#111;margin-left:10px">إجراءات سريعة:</span>
+<a href="/employees/create" style="background:#f6f0e2;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">إضافة موظف</a>
+<a href="/customers/create" style="background:#f6f0e2;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">إضافة عميل</a>
+<a href="/products/create" style="background:#f6f0e2;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">إضافة صنف</a>
+<div style="flex:1"></div>
+<a href="/reports" style="background:#fff;border:1px solid #ddd;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">التقارير</a>
+<a href="/users" style="background:#fff;border:1px solid #ddd;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">اليوزر</a>
+</div>
+
+{{-- جدول --}}
+<div style="background:#fff;border-radius:18px;padding:22px;margin-top:20px">
+<h3 style="margin-bottom:12px">آخر الفواتير</h3>
+<table style="width:100%;border-collapse:collapse">
+<tr style="background:#fbf7ec"><th>#</th><th>العميل</th><th>المبلغ</th><th>الاجراء</th></tr>
+@forelse($latestInvoices as $inv)
+<tr style="border-bottom:1px solid #eee"><td>{{$inv->id}}</td><td>{{$inv->customer->name ?? '-'}}</td><td>{{$inv->total ?? 0}}</td><td><a href="/invoices/{{$inv->id}}/edit" style="color:#111;text-decoration:none;font-weight:700">تعديل</a></td></tr>
+@empty<tr><td colspan="4" style="padding:20px;color:#999">لا يوجد فواتير</td></tr>@endforelse
+</table>
+</div>
+@endsection

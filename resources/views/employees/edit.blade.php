@@ -1,22 +1,25 @@
-<h2 style="text-align:center">تعديل الموظف - {{ $employee->name }}</h2>
+@extends('layouts.main')
+@section('content')
+<h2 style="font-size:26px;margin-bottom:18px">تعديل موظف</h2>
+<div style="background:#fff;border-radius:18px;padding:24px;max-width:750px">
+<form method="POST" action="/employees/{{$employee->id}}">
+@csrf @method('PUT')
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><label>الاسم الكامل *</label><input name="name" value="{{$employee->name}}" required style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div><label>رقم الهوية / الرقم الوطني</label><input name="national_id" value="{{$employee->national_id ?? ''}}" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div><label>رقم الهاتف</label><input name="phone" value="{{$employee->phone ?? ''}}" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div><label>الوظيفة</label><input name="job" value="{{$employee->job ?? ''}}" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div><label>القسم</label><input name="department" value="{{$employee->department ?? ''}}" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div><label>الراتب</label><input name="salary" type="number" value="{{$employee->salary ?? ''}}" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div><label>تاريخ التعيين</label><input name="hire_date" type="date" value="{{$employee->hire_date ?? ''}}" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div><label>الحالة</label><select name="status" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"><option value="active" {{$employee->status=='active'?'selected':''}}>نشط</option><option value="inactive" {{$employee->status=='inactive'?'selected':''}}>غير نشط</option></select></div>
+</div>
+<div style="margin-top:14px"><label>العنوان</label><input name="address" value="{{$employee->address ?? ''}}" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
 
-<form action="{{ route('employees.update', $employee->id) }}" method="POST" style="max-width:700px; margin:20px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px #ddd">
-@csrf
-@method('PUT')
-
-@foreach($employee->getAttributes() as $key => $value)
-  @if(!in_array($key, ['id','created_at','updated_at']))
-    <label style="font-weight:bold; display:block; margin-top:10px">{{ $key }}</label>
-    @if($key == 'marital_status')
-      <select name="{{ $key }}" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc">
-        <option value="أعزب" {{ $value=='أعزب' ? 'selected':'' }}>أعزب</option>
-        <option value="متزوج" {{ $value=='متزوج' ? 'selected':'' }}>متزوج</option>
-      </select>
-    @else
-      <input type="text" name="{{ $key }}" value="{{ $value }}" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc">
-    @endif
-  @endif
-@endforeach
-
-<button type="submit" style="width:100%; background:#2C3E5A; color:white; padding:14px; border:none; border-radius:8px; margin-top:20px; font-size:16px">حفظ كل التعديلات</button>
+<div style="display:flex;gap:10px;margin-top:20px">
+<button style="background:#111;color:#e9d7b0;padding:12px 22px;border-radius:12px;border:none;font-weight:700;cursor:pointer">تحديث</button>
+<a href="/employees" style="background:#f6f0e2;color:#111;padding:12px 20px;border-radius:12px;text-decoration:none">رجوع</a>
+</div>
 </form>
+</div>
+@endsection
