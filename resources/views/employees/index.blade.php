@@ -1,5 +1,19 @@
 @extends('layouts.main')
 @section('content')
+<div class="container mt-4">
+
+    {{-- رسالة التأكيد - خليها هنا بس --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <div class="card">
+        <table class="table">...
+
+
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
 <h2 style="font-size:28px">إدارة الموظفون</h2>
 <a href="/employees/create" style="background:#111;color:#e9d7b0;padding:11px 18px;border-radius:12px;text-decoration:none;font-weight:700">+ إضافة موظف</a>
@@ -16,7 +30,7 @@
 <td>{{$emp->job ?? '-'}}</td>
 <td style="padding:10px;display:flex;gap:8px;justify-content:center">
 <a href="/employees/{{$emp->id}}/edit" style="background:#f6f0e2;color:#111;padding:7px 12px;border-radius:8px;text-decoration:none;font-size:13px">تعديل</a>
-<a href="/employees/{{$emp->id}}/relatives" style="background:#fff;border:1px solid #ddd;padding:7px 12px;border-radius:8px;text-decoration:none;color:#111;font-size:13px">الأقارب</a>
+<button onclick="return confirm('هل انت متأكد من الحذف؟')" class="btn btn-danger btn-sm">حذف</button>
 </td>
 </tr>
 @empty

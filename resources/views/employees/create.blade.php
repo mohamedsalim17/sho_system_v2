@@ -1,25 +1,102 @@
-@extends('layouts.main')
+@extends('layouts.app')
 @section('content')
-<h2 style="font-size:26px;margin-bottom:18px">إضافة موظف جديد</h2>
-<div style="background:#fff;border-radius:18px;padding:24px;max-width:750px">
-<form method="POST" action="/employees">
-@csrf
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-<div><label>الاسم الكامل *</label><input name="name" required style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
-<div><label>رقم الهوية / الرقم الوطني</label><input name="national_id" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
-<div><label>رقم الهاتف</label><input name="phone" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
-<div><label>الوظيفة / المسمى الوظيفي</label><input name="job" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
-<div><label>القسم</label><input name="department" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
-<div><label>الراتب</label><input name="salary" type="number" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
-<div><label>تاريخ التعيين</label><input name="hire_date" type="date" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
-<div><label>الحالة</label><select name="status" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"><option value="active">نشط</option><option value="inactive">غير نشط</option></select></div>
-</div>
-<div style="margin-top:14px"><label>العنوان</label><input name="address" style="width:100%;padding:11px;border-radius:10px;border:1px solid #ddd;margin-top:6px"></div>
+<div class="container py-4" dir="rtl" style="text-align:right; font-family: 'Tajawal', sans-serif;">
+    <div class="card border-0 shadow-sm rounded-4 mx-auto" style="max-width:900px; background:#fff;">
+        <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold m-0" style="color:#1a1a1a;">{{ isset($customer) ? 'تعديل بيانات العميل' : 'إضافة عميل جديد' }}</h4>
+                <small class="text-muted">جميع الحقول التي عليها * مطلوبة</small>
+            </div>
+            <a href="{{ route('employees.index') }}" class="btn btn-light rounded-pill px-4">رجوع</a>
+        </div>
 
-<div style="display:flex;gap:10px;margin-top:20px">
-<button style="background:#111;color:#e9d7b0;padding:12px 22px;border-radius:12px;border:none;font-weight:700;cursor:pointer">حفظ الموظف</button>
-<a href="/employees" style="background:#f6f0e2;color:#111;padding:12px 20px;border-radius:12px;text-decoration:none">رجوع</a>
-</div>
-</form>
+        <div class="card-body p-4">
+            @if($errors->any())
+            <div class="alert border-0 rounded-3 mb-4" style="background:#fdecea; color:#611a15;">
+                @foreach($errors->all() as $error)
+                    <div class="mb-1">⚠️ {{ $error }}</div>
+                @endforeach
+            </div>
+            @endif
+
+            <form action="{{ isset($employee) ? route('employees.update', $employee->id) : route('employees.store') }}" method="POST">
+                @csrf
+                @if(isset($customer)) @method('PUT') @endif
+
+                <h6 class="fw-bold mb-3 mt-2" style="color:#555;">البيانات الأساسية</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">الاسم الكامل *</label>
+                        <input type="text" name="name" value="{{ old('name', $customer->name ?? '') }}" class="form-control rounded-3 py-2 text-end" placeholder="مثال: محمد أحمد" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">رقم الهاتف</label>
+                        <input type="text" name="phone" value="{{ old('phone', $employee->phone ?? '') }}" class="form-control rounded-3 py-2 text-end" placeholder="09xxxxxxxx">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">الجنس</label>
+                        <select name="gender" class="form-select rounded-3 py-2 text-end">
+                            <option value="">اختر</option>
+                            <option value="ذكر" {{ (old('gender', $employee->gender ?? '')=='ذكر')?'selected':'' }}>ذكر</option>
+                            <option value="أنثى" {{ (old('gender', $employee->gender ?? '')=='أنثى')?'selected':'' }}>أنثى</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">الرقم الوطني</label>
+                        <input type="text" name="national_id" value="{{ old('national_id', $employee->national_id ?? '') }}" class="form-control rounded-3 py-2 text-end">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">تاريخ الميلاد</label>
+                        <input type="date" name="birth_date" value="{{ old('birth_date', $employee->birth_date ?? '') }}" class="form-control rounded-3 py-2">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">الوظيفة</label>
+                        <input type="text" name="job" value="{{ old('job', $employee->job ?? '') }}" class="form-control rounded-3 py-2 text-end">
+                    </div>
+
+                    <h6 class="fw-bold mb-2 mt-4" style="color:#555;">بيانات السكن</h6>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">المستوى التعليمي</label>
+                        <select name="education_level" class="form-select rounded-3 py-2 text-end">
+                            <option value="">اختر</option>
+                            <option value="ابتدائي">ابتدائي</option>
+                            <option value="ثانوي">ثانوي</option>
+                            <option value="جامعي">جامعي</option>
+                            <option value="دراسات عليا">دراسات عليا</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">الولاية</label>
+                        <input type="text" name="state" value="{{ old('state', $employee->state ?? '') }}" class="form-control rounded-3 py-2 text-end">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">المدينة</label>
+                        <input type="text" name="city" value="{{ old('city', $employee->city ?? '') }}" class="form-control rounded-3 py-2 text-end">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">العنوان بالتفصيل</label>
+                        <textarea name="address" rows="2" class="form-control rounded-3 text-end">{{ old('address', $employee->address ?? '') }}</textarea>
+                    </div>
+
+                    <h6 class="fw-bold mb-2 mt-4" style="color:#888;">في حالة الوفاة (اختياري)</h6>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">تاريخ الوفاة</label>
+                        <input type="date" name="date_of_death" value="{{ old('date_of_death', $employee->date_of_death ?? '') }}" class="form-control rounded-3 py-2">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">مكان الوفاة</label>
+                        <input type="text" name="place_of_death" value="{{ old('place_of_death', $employee->place_of_death ?? '') }}" class="form-control rounded-3 py-2 text-end">
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-dark rounded-pill py-2 fw-bold" style="background:#111;">
+                        {{ isset($employee) ? 'حفظ التعديلات' : 'حفظ العميل' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
