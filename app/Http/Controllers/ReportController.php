@@ -1,87 +1,100 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Models\Employee;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Employee;
 
 class ReportController extends Controller
 {
-    public function index(Request $request){
-        $q = Employee::query();
-        if($request->address) $q->where('address','like','%'.$request->address.'%');
-        if($request->job_title) $q->where('job_title','like','%'.$request->job_title.'%');
-        if($request->department) $q->where('department','like','%'.$request->department.'%');
-        if($request->search) $q->where('name','like','%'.$request->search.'%');
-        $employees = $q->latest()->get();
-        $columns = Schema::getColumnListing('employees');
-        return view('reports.index', compact('employees','columns'));
+    // صفحة السلايد الرئيسية
+    public function index(){ 
+        return view('reports.index'); 
     }
 
-    public function excel(Request $request){
-        $q = Employee::query();
-        if($request->address) $q->where('address','like','%'.$request->address.'%');
-        if($request->job_title) $q->where('job_title','like','%'.$request->job_title.'%');
-        if($request->department) $q->where('department','like','%'.$request->department.'%');
-        if($request->search) $q->where('name','like','%'.$request->search.'%');
-        $employees = $q->get();
-        $columns = Schema::getColumnListing('employees');
+    // 1- تقرير عام + فترة + بحث
+    public function general(Request $request){
+        $query = Employee::query();
 
-        // الترجمة للاكسل
-        $labels = [
-            'id'=>'م','employee_no'=>'الرقم الوظيفي','national_id'=>'الرقم الوطني','name'=>'الاسم',
-            'phone'=>'الهاتف','birth_date'=>'تاريخ الميلاد','death_date'=>'تاريخ الوفاة','death_place'=>'مكان الوفاة',
-            'marital_status'=>'الحالة الاجتماعية','job_title'=>'الوظيفة','department'=>'القسم','salary'=>'المرتب',
-            'hire_date'=>'تاريخ التعيين','state'=>'الولاية','city'=>'المدينة','neighborhood'=>'الحي','street'=>'الشارع',
-            'created_at'=>'تاريخ الاضافة','updated_at'=>'اخر تحديث','address'=>'السكن'
-        ];
-        $marital = ['single'=>'أعزب','married'=>'متزوج','divorced'=>'مطلق','widowed'=>'أرمل'];
+        // بحث عام
+        if($request->filled('search')){
+            $query->where('name','LIKE',"%{$request->search}%")
+                  ->orWhere('employee_no','LIKE',"%{$request->search}%");
+        }
 
-        $filename = "التقرير_الشامل_".date('Y-m-d').".csv";
-        $headers = ["Content-type"=>"text/csv; charset=UTF-8","Content-Disposition"=>"attachment; filename=$filename"];
-        
-        $callback = function() use ($employees, $columns, $labels, $marital) {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // عشان العربي يظهر في الاكسل
-            
-            // العناوين
-            $headerRow = ['#'];
-            foreach($columns as $col){
-                if($col!='id') $headerRow[] = $labels[$col] ?? $col;
-            }
-            fputcsv($file, $headerRow);
+        // فلتر الفترة بتاريخ الاستشهاد
+        if($request->filled('from_date')){
+            $query->where('death_date','>=',$request->from_date);
+        }
+        if($request->filled('to_date')){
+            $query->where('death_date','<=',$request->to_date);
+        }
 
-            // البيانات
-            foreach($employees as $i=>$e){
-                $row = [$i+1];
-                foreach($columns as $col){
-                    if($col=='id') continue;
-                    $val = $e->$col;
-                    if($col=='marital_status') $val = $marital[$val] ?? $val;
-                    $row[] = $val;
-                }
-                fputcsv($file, $row);
-            }
-            fclose($file);
-        };
-        return response()->stream($callback, 200, $headers);
+        $employees = $query->get();
+        return view('reports.general', compact('employees'));
     }
+
+    // 2- تقرير مخصص - تختار الحقول + بحث
     public function custom(Request $request){
-    $allColumns = Schema::getColumnListing('employees');
-    $labels = [
-        'employee_no'=>'الرقم الوظيفي','national_id'=>'الرقم الوطني','name'=>'الاسم',
-        'phone'=>'الهاتف','birth_date'=>'تاريخ الميلاد','death_date'=>'تاريخ الوفاة','death_place'=>'مكان الوفاة',
-        'marital_status'=>'الحالة الاجتماعية','job_title'=>'الوظيفة','department'=>'القسم','salary'=>'المرتب',
-        'hire_date'=>'تاريخ التعيين','state'=>'الولاية','city'=>'المدينة','neighborhood'=>'الحي','street'=>'الشارع',
-        'address'=>'السكن','created_at'=>'تاريخ الاضافة'
-    ];
-    // الحقول الافتراضية لو ما اختار
-    $selected = $request->input('fields', ['name','phone','job_title','department','state']);
-    
-    $q = Employee::query();
-    if($request->search) $q->where('name','like','%'.$request->search.'%');
-    $employees = $q->latest()->get();
+        $allColumns = array_diff(Schema::getColumnListing('employees'), ['id','created_at','updated_at']);
+        $selected = $request->get('fields', ['employee_no','name','department','state','death_date']);
+        
+        $query = Employee::query();
+        if($request->filled('search')){
+            $query->where('name','LIKE',"%{$request->search}%");
+        }
+        // فترة
+        if($request->filled('from_date')) $query->where('death_date','>=',$request->from_date);
+        if($request->filled('to_date')) $query->where('death_date','<=',$request->to_date);
 
-    return view('reports.custom', compact('allColumns','labels','selected','employees'));
-}
+        $employees = $query->get();
+        return view('reports.custom', compact('allColumns','selected','employees'));
+    }
 
+    // 3- تقرير مفلتر + بحث متقدم لكل عمود + فترة
+    public function builder(Request $request){
+        $allColumns = array_diff(Schema::getColumnListing('employees'), ['id','created_at','updated_at']);
+        $selectedColumns = $request->get('columns', ['employee_no','name','department','state','death_place','death_date']);
+
+        $query = Employee::query();
+
+        // بحث سريع
+        if($request->filled('search')){
+            $query->where('name','LIKE',"%{$request->search}%");
+        }
+
+        // فلترة لكل عمود
+        foreach($request->except(['columns','fields','search','page','from_date','to_date']) as $key=>$value){
+            if($value!==null && $value!=='' && in_array($key,$allColumns)){
+                $query->where($key,'LIKE',"%{$value}%");
+            }
+        }
+
+        // فلترة الفترة
+        if($request->filled('from_date')) $query->where('death_date','>=',$request->from_date);
+        if($request->filled('to_date')) $query->where('death_date','<=',$request->to_date);
+
+        $employees = $query->get();
+        return view('reports.builder', compact('allColumns','selectedColumns','employees'));
+    }
+
+    // تصدير اكسل (بستخدم نفس الفلترة)
+    public function export(Request $request){
+        $allColumns = array_diff(Schema::getColumnListing('employees'), ['id','created_at','updated_at']);
+        $selectedColumns = $request->get('columns', $request->get('fields', ['employee_no','name','department','state']));
+        $query = Employee::query();
+        foreach($request->except(['columns','fields','search','page','from_date','to_date']) as $key=>$value){
+            if($value!==null && $value!=='' && in_array($key,$allColumns)){
+                $query->where($key,'LIKE',"%{$value}%");
+            }
+        }
+        if($request->filled('from_date')) $query->where('death_date','>=',$request->from_date);
+        if($request->filled('to_date')) $query->where('death_date','<=',$request->to_date);
+
+        $employees = $query->get();
+        // لو عندك export view استخدمو، لو لا برجع builder
+        if(view()->exists('reports.export')){
+            return view('reports.export', compact('employees','selectedColumns'));
+        }
+        return view('reports.builder', compact('allColumns','selectedColumns','employees'));
+    }
 }

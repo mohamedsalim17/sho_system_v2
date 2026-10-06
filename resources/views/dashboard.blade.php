@@ -35,9 +35,18 @@
 <a href="/customers/create" style="background:#f6f0e2;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">إضافة عميل</a>
 <a href="/products/create" style="background:#f6f0e2;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">إضافة صنف</a>
 <div style="flex:1"></div>
-<a href="/reports" style="background:#fff;border:1px solid #ddd;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">التقارير</a>
+<button onclick="openR()" style="background:#4a7c59;color:#fff;padding:8px 14px;border:none;border-radius:8px;cursor:pointer">التقارير</button>
 <a href="/users" style="background:#fff;border:1px solid #ddd;color:#111;padding:10px 16px;border-radius:10px;text-decoration:none;font-size:14px">اليوزر</a>
 </div>
+<style>#rSlide{position:fixed;top:0;right:-360px;width:330px;height:100%;background:#fff;z-index:99999;transition:0.3s;direction:rtl;padding:18px;box-shadow:-5px 0 20px #0002;overflow:auto}#rSlide.on{right:0}#rOver{position:fixed;inset:0;background:#0005;z-index:99998;display:none}#rOver.on{display:block}.rBtn{display:block;width:100%;padding:13px;margin:9px 0;border-radius:10px;text-decoration:none;font-weight:bold;border:none;cursor:pointer;text-align:right}</style>
+<div id="rOver" onclick="closeR()"></div>
+<div id="rSlide">
+<div style="display:flex;justify-content:space-between;align-items:center"><h3>📑 التقارير</h3><button onclick="closeR()" style="border:none;background:#eee;width:30px;height:30px;border-radius:50%;cursor:pointer">X</button></div>
+<a href="/reports/general" class="rBtn" style="background:#e8f5e9;color:#2e7d32">📄 تقرير عام<br><small>كل الموظفين - طباعة A4 صفحتين</small></a>
+<a href="/reports/custom" class="rBtn" style="background:#e3f2fd;color:#1565c0">🧩 تقرير مخصص<br><small>تختار الحقول</small></a>
+<a href="/reports/builder" class="rBtn" style="background:#fff3e0;color:#e65100">🔍 تقرير مفلتر + فترة<br><small>فلتر لكل عمود + من/إلى</small></a>
+</div>
+<script>function openR(){document.getElementById('rSlide').classList.add('on');document.getElementById('rOver').classList.add('on')}function closeR(){document.getElementById('rSlide').classList.remove('on');document.getElementById('rOver').classList.remove('on')}</script>
 
 {{-- جدول --}}
 <div style="background:#fff;border-radius:18px;padding:22px;margin-top:20px">

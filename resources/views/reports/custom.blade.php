@@ -1,63 +1,7 @@
-@extends('layouts.main')
-@section('content')
-
-<style>
-.card2{background:#fff;border-radius:10px;padding:15px;margin-bottom:12px;box-shadow:0 2px 5px #0001}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
-.check{border:1px solid #ccc;padding:8px;border-radius:6px;background:#faf7f0;cursor:pointer;display:flex;gap:6px;align-items:center}
-.check input{width:18px;height:18px}
-.btn{padding:10px 18px;border:none;border-radius:6px;color:#fff;font-weight:bold;cursor:pointer}
-.btn-g{background:#4a7c59}.btn-d{background:#222}
-.table-wrap{overflow-x:auto;background:#fff;border-radius:10px}
-table{width:100%;border-collapse:collapse;min-width:800px}
-th,td{border:1px solid #444;padding:6px;font-size:12px;text-align:center;white-space:nowrap}
-th{background:#2d4a22;color:#fff}
-</style>
-
-<h3>🛠️ التقرير المخصص - اختار اكثر من 4 حقول</h3>
-
-<div class="card2">
-<form method="GET">
-<p><b>اختار الحقول:</b> (علّم اكتر من 4)</p>
-<div class="grid">
-@foreach($allColumns as $col)
-@if($col!='id' && $col!='updated_at')
-<label class="check">
-<input type="checkbox" name="fields[]" value="{{ $col }}" {{ in_array($col,$selected) ? 'checked' : '' }}>
-{{ $labels[$col] ?? $col }}
-</label>
-@endif
-@endforeach
-</div>
-<div style="margin-top:12px;display:flex;gap:8px">
-<input name="search" value="{{ request('search') }}" placeholder="بحث بالاسم" style="flex:1;padding:8px;border-radius:5px;border:1px solid #ccc">
-<button class="btn btn-g">🔍 إنشاء التقرير ({{ count($selected) }} حقل)</button>
-</div>
-</form>
-</div>
-
-@if(count($employees)>0)
-<div style="display:flex;gap:8px;margin-bottom:10px">
-<button onclick="window.print()" class="btn btn-d">🖨️ طباعة</button>
-<span style="margin-right:auto;background:#fff;padding:8px 12px;border-radius:6px">العدد: {{ $employees->count() }} | الحقول: {{ count($selected) }}</span>
-</div>
-
-<div class="table-wrap">
-<table>
-<tr><th>#</th>
-@foreach($selected as $col)
-<th>{{ $labels[$col] ?? $col }}</th>
-@endforeach
-</tr>
-@foreach($employees as $e)
-<tr><td>{{ $loop->iteration }}</td>
-@foreach($selected as $col)
-<td>{{ $e->$col }}</td>
-@endforeach
-</tr>
-@endforeach
-</table>
-</div>
-@endif
-
-@endsection
+<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقرير مخصص</title>
+<style>body{font-family:Tahoma;direction:rtl;background:#f4f6f9;margin:0;padding:12px}.card{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px}.btn{padding:8px 14px;border-radius:6px;font-weight:bold;border:none;cursor:pointer;text-decoration:none;display:inline-block}.btn-d{background:#222;color:#fff}.btn-g{background:#4a7c59;color:#fff}.btn-e{background:#1d6f42;color:#fff}th,td{border:1px solid #444;padding:5px;font-size:11px;text-align:center}th{background:#2d4a22;color:#fff}table{width:100%;border-collapse:collapse}@page{size:A4 landscape;margin:8mm}@media print{.no-print{display:none!important}}</style></head>
+<body>
+@php $L=['employee_no'=>'الرقم الوظيفي','national_id'=>'الرقم الوطني','name'=>'الاسم','phone'=>'الهاتف','department'=>'القسم','state'=>'الولاية']; $sel=$selected ?? $selectedColumns ?? []; function gc($k,$v){return is_string($k)&&!is_numeric($k)?$k:$v;} @endphp
+<div class="card no-print" style="display:flex;justify-content:space-between"><h3>تقرير مخصص - {{count($sel)}} حقل</h3><div><a href="{{ url('/reports') }}" class="btn" style="background:#eee">رجوع للتقارير</a> <a href="{{ url('/') }}" class="btn btn-d">داش بورد</a></div></div>
+<div class="card no-print"><form method="GET"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">@foreach($allColumns as $k=>$v)@php $c=gc($k,$v)@endphp @if(!in_array($c,['id','created_at','updated_at']))<label style="border:1px solid #ddd;padding:5px;border-radius:4px;font-size:12px"><input type="checkbox" name="fields[]" value="{{$c}}" {{in_array($c,$sel)?'checked':''}}> {{$L[$c]??$c}}</label>@endif @endforeach</div><div style="display:flex;gap:8px;margin-top:10px"><input name="search" value="{{request('search')}}" placeholder="بحث بالاسم" style="flex:1;padding:8px;border:1px solid #ccc;border-radius:5px"><button class="btn btn-g">إنشاء التقرير</button></div></form></div>
+@if(isset($employees)&&$employees->count())<div class="card no-print" style="display:flex;gap:8px"><button onclick="window.print()" class="btn btn-d">🖨️ طباعة</button><a href="{{ url('/reports/export?'.http_build_query(request()->all())) }}" class="btn btn-e">📊 تصدير اكسل</a><span style="margin-right:auto">العدد: {{$employees->count()}}</span></div><div class="card"><table><thead><tr><th>#</th>@foreach($sel as $c)<th>{{$L[$c]??$c}}</th>@endforeach</tr></thead><tbody>@foreach($employees as $i=>$e)<tr><td>{{$i+1}}</td>@foreach($sel as $c)<td>{{$e->$c}}</td>@endforeach</tr>@endforeach</tbody></table></div>@endif</body></html>

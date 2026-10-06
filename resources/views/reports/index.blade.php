@@ -1,91 +1,71 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
-<head>
-<meta charset="UTF-8">
-<title>التقرير الشامل</title>
+<head><meta charset="UTF-8"><title>التقارير</title>
 <style>
-*{font-family:Tahoma;box-sizing:border-box}
-body{background:#f5f1e8;margin:0;padding:15px}
-.card{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.col{flex:1;min-width:140px}
-input{width:100%;padding:8px;border:1px solid #ccc;border-radius:5px}
-.btn{padding:8px 16px;border:none;border-radius:5px;color:#fff;font-weight:bold;cursor:pointer}
-.btn-g{background:#4a7c59}.btn-d{background:#222}.btn-e{background:#1d6f42}
-.table-wrap{overflow-x:auto;background:#fff;border-radius:10px}
-table{width:100%;border-collapse:collapse;min-width:1100px}
-th,td{border:1px solid #444;padding:6px;font-size:12px;white-space:nowrap;text-align:center}
-th{background:#2d4a22;color:#fff}
-tr:nth-child(even){background:#f9f6ef}
+*{font-family:Tahoma;box-sizing:border-box}body{background:#f4f6f9;margin:0;padding:15px;direction:rtl}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.btn{padding:10px 16px;border-radius:8px;font-weight:bold;text-decoration:none;display:inline-block;border:none;cursor:pointer}
+.btn-d{background:#222;color:#fff}.btn-light{background:#eee;color:#000}
+.card{background:#fff;border-radius:12px;padding:15px;margin-bottom:12px;box-shadow:0 2px 5px #0001}
 
-/* طباعة A4 بالعرض */
-@page { size: A4 landscape; margin: 10mm; }
-@media print{
-.no-print{display:none}
-body{background:#fff;padding:0}
-.table-wrap{overflow:visible}
-table{min-width:100%;font-size:10px}
-th{background:#000 !important;color:#fff !important;-webkit-print-color-adjust:exact}
-}
+/* السلايد */
+#reportsSlide{position:fixed;top:0;right:-400px;width:350px;height:100%;background:#fff;box-shadow:-3px 0 15px #0003;transition:0.3s;z-index:9999;padding:20px;overflow:auto}
+#reportsSlide.active{right:0}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0005;display:none;z-index:9998}
+.overlay.active{display:block}
+.slide-btn{display:block;width:100%;padding:15px;margin:10px 0;border-radius:10px;border:none;font-weight:bold;font-size:15px;cursor:pointer;text-align:right}
+.slide-btn span{display:block;font-size:11px;color:#666;font-weight:normal;margin-top:4px}
 </style>
 </head>
 <body>
 
-@php
-$labels = [
-'id'=>'م','employee_no'=>'الرقم الوظيفي','national_id'=>'الرقم الوطني','name'=>'الاسم',
-'phone'=>'الهاتف','birth_date'=>'تاريخ الميلاد','death_date'=>'تاريخ الوفاة','death_place'=>'مكان الوفاة',
-'marital_status'=>'الحالة الاجتماعية','job_title'=>'الوظيفة','department'=>'القسم','salary'=>'المرتب',
-'hire_date'=>'تاريخ التعيين','state'=>'الولاية','city'=>'المدينة','neighborhood'=>'الحي','street'=>'الشارع',
-'created_at'=>'تاريخ الاضافة','updated_at'=>'اخر تحديث','address'=>'السكن','gender'=>'النوع'
-];
-$marital = ['single'=>'أعزب','married'=>'متزوج','divorced'=>'مطلق','widowed'=>'أرمل'];
-@endphp
-
-<h3 style="text-align:center">📊 التقرير الشامل - sho_system_v2 | ورق A4 - عرضي</h3>
-
-<div class="card no-print">
-<form method="GET" class="row">
-<div class="col"><input name="search" value="{{ request('search') }}" placeholder="بحث بالاسم"></div>
-<div class="col"><input name="address" value="{{ request('address') }}" placeholder="السكن"></div>
-<div class="col"><input name="job_title" value="{{ request('job_title') }}" placeholder="الوظيفة"></div>
-<div class="col" style="flex:0.4"><button class="btn btn-g" style="width:100%">عرض</button></div>
-</form>
+<div class="top">
+<h2>التقارير</h2>
+<div style="display:flex;gap:8px">
+<button onclick="openSlide()" class="btn btn-d">📊 فتح سلايد التقارير</button>
+<a href="{{ url('/') }}" class="btn btn-light">داش بورد</a>
+</div>
 </div>
 
-<div class="no-print" style="margin-bottom:10px;display:flex;gap:8px">
-<button onclick="window.print()" class="btn btn-d">🖨️ طباعة A4 عرضي</button>
-<a href="{{ route('reports.excel', request()->all()) }}" class="btn btn-e" style="text-decoration:none">📊 Excel</a>
-<span style="margin-right:auto;background:#fff;padding:6px 10px;border-radius:5px">العدد: {{ $employees->count() }}</span>
+<div class="card" style="text-align:center;color:#888">
+دوس زر <b>فتح سلايد التقارير</b> - حايفتح ليك السلايد فيهو 3 تقارير
 </div>
 
-<div class="table-wrap">
-<table>
-<tr><th>#</th>
-@foreach($columns as $col)
-@if(!in_array($col,['id'])) {{-- نتخطى الـ id المكرر --}}
-<th>{{ $labels[$col] ?? $col }}</th>
-@endif
-@endforeach
-</tr>
-@foreach($employees as $e)
-<tr><td>{{ $loop->iteration }}</td>
-@foreach($columns as $col)
-@if(!in_array($col,['id']))
-<td>
-@php $val = $e->$col; @endphp
-@if($col=='marital_status') {{ $marital[$val] ?? $val }}
-@elseif(str_contains($col,'date') && $val) {{ \Carbon\Carbon::parse($val)->format('Y-m-d') }}
-@else {{ $val }} @endif
-</td>
-@endif
-@endforeach
-</tr>
-@endforeach
-</table>
+{{-- الخلفية --}}
+<div id="overlay" class="overlay" onclick="closeSlide()"></div>
+
+{{-- السلايد نفسه --}}
+<div id="reportsSlide">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+<h3 style="margin:0">📑 التقارير</h3>
+<button onclick="closeSlide()" style="background:#eee;border:none;padding:8px 12px;border-radius:50%;cursor:pointer;font-weight:bold">X</button>
 </div>
 
-<p class="no-print" style="text-align:center;margin-top:10px;font-size:12px">💡 عند الطباعة اختار Orientation: Landscape عشان يطلع بعرض الورقة كامل</p>
+<button class="slide-btn" style="background:#e8f5e9;color:#2e7d32" onclick="window.location.href='{{ url('/reports/general') }}'">
+📄 تقرير عام
+<span>كل الموظفين بكل الحقول - طباعة A4 صفحتين</span>
+</button>
 
-</body>
-</html>
+<button class="slide-btn" style="background:#e3f2fd;color:#1565c0" onclick="window.location.href='{{ url('/reports/custom') }}'">
+🧩 تقرير مخصص
+<span>تختار الحقول العايزها انت (4 حقول واكثر)</span>
+</button>
+
+<button class="slide-btn" style="background:#fff3e0;color:#ef6c00" onclick="window.location.href='{{ url('/reports/builder') }}'">
+🔍 تقرير مفلتر + بحث
+<span>فيهو اختيار الحقول + فلتر لكل عمود + بحث شغال</span>
+</button>
+
+<hr style="margin:20px 0">
+
+<button class="slide-btn" style="background:#222;color:#fff" onclick="window.location.href='{{ url('/') }}'">
+🏠 رجوع للداش بورد
+</button>
+</div>
+
+<script>
+function openSlide(){document.getElementById('reportsSlide').classList.add('active');document.getElementById('overlay').classList.add('active');}
+function closeSlide(){document.getElementById('reportsSlide').classList.remove('active');document.getElementById('overlay').classList.remove('active');}
+</script>
+
+</body></html>
