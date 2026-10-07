@@ -1,7 +1,35 @@
-<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقرير عام</title>
-<style>body{font-family:Tahoma;direction:rtl;background:#f4f6f9;margin:0;padding:12px}.card{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px}.btn{padding:8px 14px;border-radius:6px;font-weight:bold;border:none;cursor:pointer;text-decoration:none;display:inline-block}.btn-d{background:#222;color:#fff}.btn-e{background:#1d6f42;color:#fff}th,td{border:1px solid #444;padding:5px;font-size:11px;text-align:center}th{background:#2d4a22;color:#fff}table{width:100%;border-collapse:collapse}@page{size:A4 landscape;margin:8mm}@media print{.no-print{display:none!important}}</style></head>
-<body>
-<div class="card no-print" style="display:flex;justify-content:space-between"><h3>تقرير عام - كل الموظفين</h3><div><a href="{{ url('/reports') }}" class="btn" style="background:#eee">رجوع للتقارير</a> <a href="{{ url('/') }}" class="btn btn-d">داش بورد</a></div></div>
-<div class="card no-print" style="display:flex;gap:8px"><button onclick="window.print()" class="btn btn-d">🖨️ طباعة A4 - صفحتين</button><a href="{{ url('/reports/export') }}" class="btn btn-e">📊 تصدير اكسل</a><span style="margin-right:auto">العدد: {{$employees->count()}}</span></div>
-<div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>الرقم الوظيفي</th><th>الاسم</th><th>القسم</th><th>الولاية</th><th>الهاتف</th></tr></thead><tbody>@foreach($employees as $i=>$e)<tr><td>{{$i+1}}</td><td>{{$e->employee_no}}</td><td>{{$e->name}}</td><td>{{$e->department}}</td><td>{{$e->state}}</td><td>{{$e->phone}}</td></tr>@endforeach</tbody></table></div>
-</body></html>
+@extends('layouts.app')
+@section('content')
+<div class="p-4">
+<div class="flex justify-between mb-4 print:hidden">
+<div class="flex gap-2">
+<a href="{{route('reports.index')}}" class="bg-gray-600 text-white px-3 py-1 rounded">رجوع للتقارير</a>
+<a href="{{route('dashboard')}}" class="bg-black text-white px-3 py-1 rounded">الدشبورد</a>
+</div>
+<div class="flex gap-2">
+<button onclick="window.print()" class="bg-blue-600 text-white px-4 py-1 rounded">طباعة</button>
+<a href="{{route('reports.excel', request()->all())}}" class="bg-green-600 text-white px-4 py-1 rounded">Excel</a>
+<a href="{{route('reports.export', request()->all())}}" target="_blank" class="bg-red-600 text-white px-4 py-1 rounded">PDF</a>
+</div>
+</div>
+
+<form class="flex gap-2 mb-4 print:hidden">
+<input name="search" value="{{request('search')}}" placeholder="بحث" class="border p-1 rounded">
+<input type="date" name="from_date" value="{{request('from_date')}}" class="border p-1 rounded">
+<input type="date" name="to_date" value="{{request('to_date')}}" class="border p-1 rounded">
+<button class="bg-blue-500 text-white px-3 rounded">بحث</button>
+</form>
+
+<table class="w-full border text-sm">
+<thead><tr class="bg-gray-100">
+<th class="border p-2">الرقم</th><th class="border p-2">الاسم</th><th class="border p-2">الادارة</th><th class="border p-2">الحالة</th><th class="border p-2">تاريخ الوفاة</th><th class="border p-2">مكان الوفاة</th>
+</tr></thead>
+<tbody>
+@foreach($employees as $e)
+<tr><td class="border p-2">{{$e->employee_no}}</td><td class="border p-2">{{$e->name}}</td><td class="border p-2">{{$e->department}}</td><td class="border p-2">{{$e->status}}</td><td class="border p-2">{{$e->death_date}}</td><td class="border p-2">{{$e->death_place}}</td></tr>
+@endforeach
+</tbody>
+</table>
+</div>
+<style>@media print{.print\:hidden{display:none}}</style>
+@endsection
