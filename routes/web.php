@@ -14,7 +14,17 @@ Route::resource('employees', EmployeeController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('products', ProductController::class);
 Route::resource('invoices', InvoiceController::class);
-Route::get('/reports', [ReportController::class,'index'])->name('reports.index');
+
+// التقارير الجديدة - ما بتهبش القديم
+// التقارير - الاصلاح
+Route::get('/reports', [ReportController::class, 'index']);
+Route::get('/reports/customers', [ReportController::class, 'customers']);
+Route::get('/reports/employees', [ReportController::class, 'employees']);
+Route::get('/reports/products', [ReportController::class, 'products']);
+Route::get('/reports/sales', [ReportController::class, 'sales']);
+Route::get('/reports/custom', [ReportController::class, 'custom']);
+Route::get('/reports/filter', [ReportController::class, 'filter']);
+Route::get('/reports/builder', [ReportController::class,'builder']);
 
 // اليوزرات للادمن فقط
 Route::middleware(['role:admin'])->group(function(){

@@ -1,7 +1,15 @@
-<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقرير مخصص</title>
-<style>body{font-family:Tahoma;direction:rtl;background:#f4f6f9;margin:0;padding:12px}.card{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px}.btn{padding:8px 14px;border-radius:6px;font-weight:bold;border:none;cursor:pointer;text-decoration:none;display:inline-block}.btn-d{background:#222;color:#fff}.btn-g{background:#4a7c59;color:#fff}.btn-e{background:#1d6f42;color:#fff}th,td{border:1px solid #444;padding:5px;font-size:11px;text-align:center}th{background:#2d4a22;color:#fff}table{width:100%;border-collapse:collapse}@page{size:A4 landscape;margin:8mm}@media print{.no-print{display:none!important}}</style></head>
-<body>
-@php $L=['employee_no'=>'الرقم الوظيفي','national_id'=>'الرقم الوطني','name'=>'الاسم','phone'=>'الهاتف','department'=>'القسم','state'=>'الولاية']; $sel=$selected ?? $selectedColumns ?? []; function gc($k,$v){return is_string($k)&&!is_numeric($k)?$k:$v;} @endphp
-<div class="card no-print" style="display:flex;justify-content:space-between"><h3>تقرير مخصص - {{count($sel)}} حقل</h3><div><a href="{{ url('/reports') }}" class="btn" style="background:#eee">رجوع للتقارير</a> <a href="{{ url('/') }}" class="btn btn-d">داش بورد</a></div></div>
-<div class="card no-print"><form method="GET"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">@foreach($allColumns as $k=>$v)@php $c=gc($k,$v)@endphp @if(!in_array($c,['id','created_at','updated_at']))<label style="border:1px solid #ddd;padding:5px;border-radius:4px;font-size:12px"><input type="checkbox" name="fields[]" value="{{$c}}" {{in_array($c,$sel)?'checked':''}}> {{$L[$c]??$c}}</label>@endif @endforeach</div><div style="display:flex;gap:8px;margin-top:10px"><input name="search" value="{{request('search')}}" placeholder="بحث بالاسم" style="flex:1;padding:8px;border:1px solid #ccc;border-radius:5px"><button class="btn btn-g">إنشاء التقرير</button></div></form></div>
-@if(isset($employees)&&$employees->count())<div class="card no-print" style="display:flex;gap:8px"><button onclick="window.print()" class="btn btn-d">🖨️ طباعة</button><a href="{{ url('/reports/export?'.http_build_query(request()->all())) }}" class="btn btn-e">📊 تصدير اكسل</a><span style="margin-right:auto">العدد: {{$employees->count()}}</span></div><div class="card"><table><thead><tr><th>#</th>@foreach($sel as $c)<th>{{$L[$c]??$c}}</th>@endforeach</tr></thead><tbody>@foreach($employees as $i=>$e)<tr><td>{{$i+1}}</td>@foreach($sel as $c)<td>{{$e->$c}}</td>@endforeach</tr>@endforeach</tbody></table></div>@endif</body></html>
+<!DOCTYPE html>
+<html dir="rtl"><head><meta charset="UTF-8"><style>body{font-family:Tahoma;background:#f4f4f9;padding:15px}.card{background:#fff;padding:15px;border-radius:10px;overflow:auto} table{width:100%;border-collapse:collapse;margin-top:10px} th,td{border:1px solid #ddd;padding:8px;text-align:center;font-size:13px} th{background:#111;color:#fff}</style></head><body>
+<div class="card">
+<h3>تقرير مخصص - الفواتير والعملاء</h3>
+<form method="GET" style="margin-bottom:10px">
+<select name="customer_id"><option value="">كل العملاء ({{ $customers->count() }})</option>@foreach($customers as $c)<option value="{{ $c->id }}" {{ request('customer_id')==$c->id?'selected':'' }}>{{ $c->name }} - {{ $c->phone }}</option>@endforeach</select>
+<input type="date" name="from" value="{{ request('from') }}"> <input type="date" name="to" value="{{ request('to') }}">
+<button style="background:#111;color:#fff;padding:5px 12px">بحث</button>
+</form>
+<table><tr><th>#</th><th>العميل</th><th>تلفون العميل</th><th>رقم الفاتورة</th><th>المبلغ</th><th>الخصم</th><th>الصافي</th><th>التاريخ</th></tr>
+@forelse($results as $r)<tr><td>{{ $r->id }}</td><td>{{ $r->customer->name ?? 'نقدي' }}</td><td>{{ $r->customer->phone ?? '-' }}</td><td>{{ $r->invoice_number ?? $r->id }}</td><td>{{ $r->total_amount }}</td><td>{{ $r->discount ?? 0 }}</td><td>{{ $r->final_amount ?? $r->total_amount }}</td><td>{{ $r->invoice_date }}</td></tr>
+@empty<tr><td colspan="8">لا توجد فواتير</td></tr>@endforelse
+<tr style="background:#eee;font-weight:bold"><td colspan="4">الإجمالي</td><td colspan="4">{{ $total }}</td></tr>
+</table>
+</div></body></html>

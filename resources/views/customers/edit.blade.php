@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.main')
 @section('content')
 <div class="container py-4" dir="rtl" style="text-align:right; font-family: 'Tajawal', sans-serif;">
     <div class="card border-0 shadow-sm rounded-4 mx-auto" style="max-width:900px; background:#fff;">

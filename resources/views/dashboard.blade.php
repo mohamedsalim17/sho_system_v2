@@ -9,7 +9,7 @@
 </div>
 
 {{-- 4 كروت نظيفة --}}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
 <div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
 <h1 style="font-size:42px">{{$employees}}</h1><p style="color:#8a7d65;margin-top:4px">الموظفون</p>
 <a href="/employees" style="display:block;margin-top:14px;background:#f6f0e2;padding:9px;border-radius:10px;text-decoration:none;color:#111;font-weight:700;font-size:14px">إدارة الموظفون</a>
@@ -25,6 +25,16 @@
 <div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
 <h1 style="font-size:42px">{{$invoices}}</h1><p style="color:#8a7d65;margin-top:4px">الفواتير</p>
 <a href="/invoices" style="display:block;margin-top:14px;background:#111;color:#e9d7b0;padding:9px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">عرض الفواتير</a>
+</div>
+<!-- كرت التقارير - نفس استايل الفواتير بالضبط -->
+<div class="col-md-3">
+  <div class="card text-center p-3" style="border-radius: 20px; border: none; background: white;">
+    <h1 style="font-weight: bold; font-size: 48px;">6</h1>
+    <p class="text-muted" style="margin-top: -10px;">التقارير</p>
+    <div style="background: black; border-radius: 12px; padding: 10px; margin-top: 10px;">
+      <a href="/reports" style="text-decoration: none; color: white; font-weight: bold;">إدارة التقارير</a>
+    </div>
+  </div>
 </div>
 </div>
 

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.main')
 @section('content')
 <div class="p-4">
 <div class="flex justify-between mb-4 print:hidden">

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.main')
 @section('content')
 <div class="container py-4" dir="rtl" style="text-align:right">
   <div class="card border-0 shadow rounded-4 overflow-hidden">
