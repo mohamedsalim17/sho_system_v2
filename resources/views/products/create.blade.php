@@ -1,4 +1,9 @@
 @extends('layouts.app')
+@if($errors->any())
+<div style="background:#fee2e2;padding:10px;border-radius:8px;margin-bottom:10px;color:#991b1b">
+    {{ $errors->first() }}
+</div>
+@endif
 @section('content')
 <div class="card"><h3>إضافة صنف</h3>
 <form action="{{ route('products.store') }}" method="POST">@csrf

@@ -30,7 +30,11 @@
 <td>{{$emp->job ?? '-'}}</td>
 <td style="padding:10px;display:flex;gap:8px;justify-content:center">
 <a href="/employees/{{$emp->id}}/edit" style="background:#f6f0e2;color:#111;padding:7px 12px;border-radius:8px;text-decoration:none;font-size:13px">تعديل</a>
-<button onclick="return confirm('هل انت متأكد من الحذف؟')" class="btn btn-danger btn-sm">حذف</button>
+<form action="{{ route('employees.destroy', $emp->id) }}" method="POST" style="display:inline" onsubmit="return confirm('متأكد تحذف؟')">
+    @csrf
+    @method('DELETE')
+    <button type="submit" style="background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer">حذف</button>
+</form>
 </td>
 </tr>
 @empty

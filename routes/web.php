@@ -25,6 +25,9 @@ Route::get('/reports/sales', [ReportController::class, 'sales']);
 Route::get('/reports/custom', [ReportController::class, 'custom']);
 Route::get('/reports/filter', [ReportController::class, 'filter']);
 Route::get('/reports/builder', [ReportController::class,'builder']);
+Route::get('/reports/excel', [ReportController::class,'exportExcel'])->name('reports.excel');
+Route::get('/reports/pdf', [ReportController::class,'exportPdf'])->name('reports.pdf');
+
 
 // اليوزرات للادمن فقط
 Route::middleware(['role:admin'])->group(function(){

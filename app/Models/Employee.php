@@ -31,4 +31,13 @@ class Employee extends Model
         'death_date' => 'date',
         'hire_date' => 'date',
     ];
+    public function relatives()
+   {
+    return $this->hasMany(EmployeeRelative::class, 'employee_id');
+    }
+    public function invoices()
+    {
+    return $this->hasMany(Invoice::class, 'customer_id'); // لو حابي تربط الموظف لو كان عميل برضو
+  } 
+
 }
