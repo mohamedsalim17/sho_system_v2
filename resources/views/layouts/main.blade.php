@@ -29,7 +29,7 @@ th{background:#111;color:#fff}
 <body>
 <div class="navbar">
   <a href="/">🏠 الرئيسية</a>
-  <a href="{{ route('settings.index') }}" style="background:#111;color:#fff;padding:8px 15px;border-radius:20px;">⚙️ ضبط النظام</a>
+  <a href="{{ route('system-settings.index') }}" style="background:#111;color:#fff;padding:8px 15px;border-radius:20px;">⚙️ ضبط النظام</a>
   <a href="/employees">الموظفين</a>
   <a href="/customers">العملاء</a>
   <a href="/products">المخزون</a>

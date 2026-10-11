@@ -1,80 +1,115 @@
-@extends('layouts.main')
-
+@extends('layouts.app')
 @section('content')
-<style>
-    .card-box{background:#fff;border-radius:18px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);border:1px solid #eee;}
-    .black-header{background:#111;color:#fff;border-radius:25px;padding:10px;text-align:center;margin-bottom:15px;}
-    .btn-save{background:#111;color:#fff;border-radius:25px;padding:10px 0;width:100%;border:none;}
-    .form-control{border-radius:10px;margin-bottom:10px;}
-</style>
+<div class="container" dir="rtl" style="text-align:right">
+    @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
 
-<div class="container-fluid" dir="rtl" style="padding:20px;background:#f7f7f7;">
+    <h4 class="mb-4">⚙️ إعدادات النظام</h4>
 
-    <h4 style="font-weight:800;margin-bottom:20px;">⚙️ ضبط النظام - كل الإعدادات في صفحة واحدة</h4>
-
-    @if(session('success'))
-        <div class="alert alert-success" style="border-radius:15px;">{{ session('success') }}</div>
-    @endif
-
-    {{-- 1 - إضافة مستخدم --}}
-    <div class="card-box">
-        <div class="black-header">➕ إضافة مستخدم جديد</div>
-        <form method="POST" action="{{ route('settings.users.store') }}">
-            @csrf
-            <div class="row">
-                <div class="col-md-3"><input name="name" placeholder="الاسم" class="form-control" required></div>
-                <div class="col-md-3"><input name="email" type="email" placeholder="الإيميل" class="form-control" required></div>
-                <div class="col-md-3"><input name="password" type="password" placeholder="كلمة المرور" class="form-control" required></div>
-                <div class="col-md-3">
-                    <select name="role" class="form-control"><option value="admin">مدير</option><option value="hr">HR</option><option value="cashier">كاشير</option></select>
+    <div class="row">
+        {{-- الشعار --}}
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">شعار الشركة</div>
+                <div class="card-body text-center">
+                    @if(($company->logo ?? false))
+                        <img src="{{ asset('storage/'.$company->logo) }}" style="max-width:150px" class="mb-3 rounded">
+                    @else
+                        <p>لا يوجد شعار</p>
+                    @endif
+                    <form action="{{ route('system.settings.logo.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="file" name="logo" class="form-control mb-2" required>
+                        <button class="btn btn-dark w-100">رفع الشعار</button>
+                    </form>
                 </div>
             </div>
-            <button type="submit" class="btn-save mt-3">حفظ المستخدم</button>
-        </form>
-    </div>
 
-    {{-- 2 - جدول المستخدمين --}}
-    <div class="card-box">
-        <h5>👥 {{ $users->count() }} المستخدمون</h5>
-        <div class="black-header">قائمة المستخدمين</div>
-        <table class="table text-center">
-            <thead><tr><th>#</th><th>الاسم</th><th>الإيميل</th><th>الصلاحية</th><th>حذف</th></tr></thead>
-            <tbody>
-                @foreach($users as $u)
-                <tr><td>{{$u->id}}</td><td style="font-weight:bold;">{{$u->name}}</td><td>{{$u->email}}</td><td>{{$u->role ?? 'admin'}}</td>
-                <td>
-                    <form method="POST" action="{{ route('settings.users.delete',$u->id) }}">@csrf @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-light">🗑️</button>
+            <div class="card mb-3">
+                <div class="card-header">الإحصائيات</div>
+                <div class="card-body">
+                    <p>عدد المستخدمين: <b>{{ $users->count() }}</b></p>
+                    <p>عدد مرات الدخول: <b>{{ $users->sum('login_count') ?? $users->count() }}</b></p>
+                    <hr>
+                    <a href="{{ route('system.settings.backup') }}" class="btn btn-outline-primary w-100 mb-2">تحميل نسخة احتياطية</a>
+                    <form action="{{ route('system.settings.clean') }}" method="POST">
+                        @csrf
+                        <button class="btn btn-outline-danger w-100">تنظيف النظام</button>
                     </form>
-                </td></tr>
-                @endforeach
-            </tbody>
-        </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- باقي الإعدادات --}}
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">معلومات الشركة</div>
+                <div class="card-body">
+                    <form action="{{ route('system.settings.company.store') }}" method="POST">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-6 mb-2"><label>اسم الشركة</label><input name="company_name" value="{{ $company->name ?? '' }}" class="form-control" required></div>
+                            <div class="col-md-6 mb-2"><label>الهاتف</label><input name="company_phone" value="{{ $company->phone ?? '' }}" class="form-control"></div>
+                            <div class="col-md-6 mb-2"><label>الإيميل</label><input name="company_email" value="{{ $company->email ?? '' }}" class="form-control"></div>
+                            <div class="col-md-6 mb-2"><label>الموقع</label><input name="company_website" value="{{ $company->website ?? '' }}" class="form-control"></div>
+                            <div class="col-md-12 mb-2"><label>العنوان</label><input name="company_address" value="{{ $company->address ?? '' }}" class="form-control"></div>
+                        </div>
+                        <button class="btn btn-primary">💾 حفظ الشركة</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">إضافة مستخدم جديد</div>
+                <div class="card-body">
+                    <form action="{{ route('system.settings.users.store') }}" method="POST">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-3 mb-2"><input name="name" placeholder="الاسم" class="form-control" required></div>
+                            <div class="col-md-3 mb-2"><input name="email" type="email" placeholder="الإيميل" class="form-control" required></div>
+                            <div class="col-md-3 mb-2"><input name="password" type="password" placeholder="كلمة السر" class="form-control" required></div>
+                            <div class="col-md-3 mb-2">
+                                <select name="role" class="form-control" required>
+                                    <option value="">الصلاحية</option>
+                                    <option value="admin">مدير عام</option>
+                                    <option value="manager">مشرف</option>
+                                    <option value="cashier">كاشير</option>
+                                    <option value="hr">موارد بشرية</option>
+                                    <option value="user">مستخدم</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-success">+ إضافة</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">عرض المستخدمين ({{ $users->count() }})</div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-striped mb-0 text-center">
+                        <thead class="table-dark"><tr><th>#</th><th>الاسم</th><th>الإيميل</th><th>الصلاحية</th><th>حذف</th></tr></thead>
+                        <tbody>
+                            @foreach($users as $u)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $u->name }}</td>
+                                <td>{{ $u->email }}</td>
+                                <td>
+                                    @if($u->role=='admin') مدير عام
+                                    @elseif($u->role=='manager') مشرف
+                                    @elseif($u->role=='cashier') كاشير
+                                    @elseif($u->role=='hr') موارد بشرية
+                                    @else {{ $u->role }}
+                                    @endif
+                                </td>
+                                <td><a href="{{ route('system.settings.users.delete',$u->id) }}" onclick="return confirm('حذف؟')" class="btn btn-danger btn-sm">x</a></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
-    {{-- 3 - معلومات الشركة --}}
-    <div class="card-box">
-        <h5>🏢 البيانات الأساسية</h5>
-        <div class="black-header">معلومات الشركة</div>
-        <form method="POST" action="{{ route('settings.users.store') }}">
-            @csrf
-            <input name="company_name" value="{{ $company->name ?? '' }}" placeholder="اسم الشركة" class="form-control">
-            <input name="company_phone" placeholder="رقم الهاتف" class="form-control">
-            <input name="company_address" placeholder="العنوان" class="form-control">
-            {{-- ملاحظة: الحفظ هسه بحفظ كـ user لو ما عندك جدول شركة، بس عشان يشتغل الزر --}}
-            <button type="submit" class="btn-save mt-2">حفظ معلومات الشركة</button>
-        </form>
-    </div>
-
-    {{-- 4 - الشعار + نسخ + تقارير + صيانة --}}
-    <div class="row">
-        <div class="col-md-3"><div class="card-box text-center"><h6>🖼️ شعار الشركة - Logo</h6><div class="black-header">رفع الشعار</div><p style="border:2px dashed #ddd;padding:20px;border-radius:15px;">اسحب الشعار هنا</p></div></div>
-        <div class="col-md-3"><div class="card-box text-center"><h6>💾 قاعدة البيانات</h6><div class="black-header">تحميل نسخة الآن</div><p>تحميل نسخة احتياطية من النظام</p></div></div>
-        <div class="col-md-3"><div class="card-box text-center"><h6>📊 6 التقارير</h6><div class="black-header">عرض التقارير</div><p>عرض كل التقارير</p></div></div>
-        <div class="col-md-3"><div class="card-box text-center"><h6>🧹 تنظيف السجلات</h6><div class="black-header">تنظيف</div><p>مسح السجلات القديمة</p></div></div>
-    </div>
-
-    <div class="card-box text-center"><h6>🔒 سجل الدخول</h6><div class="black-header">المستخدمين</div><p class="text-muted">سجل الدخول حيظهر هنا</p></div>
-
 </div>
 @endsection

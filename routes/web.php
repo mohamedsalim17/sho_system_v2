@@ -1,3 +1,4 @@
+
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
@@ -45,11 +46,16 @@ Route::middleware(['auth'])->group(function(){
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
-Route::middleware(['auth'])->group(function(){
-    Route::get('/system-settings', [App\Http\Controllers\SystemSettingsController::class, 'index'])->name('settings.index');
-    Route::post('/system-settings/users', [App\Http\Controllers\SystemSettingsController::class, 'storeUser'])->name('settings.users.store');
-    Route::delete('/system-settings/users/{id}', [App\Http\Controllers\SystemSettingsController::class, 'deleteUser'])->name('settings.users.delete');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/system-settings', [App\Http\Controllers\SystemSettingsController::class, 'index'])->name('system.settings.index');
+   Route::get('/system-settings', [App\Http\Controllers\SystemSettingsController::class, 'index'])->name('system-settings.index');
+    Route::post('/system-settings/logo', [App\Http\Controllers\SystemSettingsController::class, 'storeLogo'])->name('system.settings.logo.store');
+    Route::post('/system-settings/users', [App\Http\Controllers\SystemSettingsController::class, 'storeUser'])->name('system.settings.users.store');
+    Route::get('/system-settings/users/{id}/delete', [App\Http\Controllers\SystemSettingsController::class, 'deleteUser'])->name('system.settings.users.delete');
+    Route::get('/system-settings/backup', [App\Http\Controllers\SystemSettingsController::class, 'downloadBackup'])->name('system.settings.backup');
+    Route::post('/system-settings/clean', [App\Http\Controllers\SystemSettingsController::class, 'clean'])->name('system.settings.clean');
 });
+
 
 require __DIR__.'/auth.php';
 // قفل التسجيل العام
