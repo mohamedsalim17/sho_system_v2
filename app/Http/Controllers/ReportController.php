@@ -6,8 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 class ReportController extends Controller
 {
-    public function index(){ return view('reports.index'); }
-
+   public function builder(Request $request){
+   $data = $this->getBuilderData($request);
+   return view('reports.builder', $data);
+}
     public function builder(Request $request)
     {
         $labels = [
