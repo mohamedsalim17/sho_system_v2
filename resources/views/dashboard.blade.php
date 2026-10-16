@@ -13,7 +13,8 @@
 <div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
 <h1 style="font-size:42px">{{$employees}}</h1><p style="color:#8a7d65;margin-top:4px">الموظفون</p>
 <a href="/employees" style="display:block;margin-top:14px;background:#f6f0e2;padding:9px;border-radius:10px;text-decoration:none;color:#111;font-weight:700;font-size:14px">إدارة الموظفون</a>
-</div>
+</div> 
+
 <div style="background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.06)">
 <h1 style="font-size:42px">{{$customers}}</h1><p style="color:#8a7d65;margin-top:4px">العملاء</p>
 <a href="/customers" style="display:block;margin-top:14px;background:#f6f0e2;padding:9px;border-radius:10px;text-decoration:none;color:#111;font-weight:700;font-size:14px">إدارة العملاء</a>

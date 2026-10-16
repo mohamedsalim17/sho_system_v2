@@ -45,6 +45,12 @@ Route::middleware(['auth'])->group(function(){
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
+Route::middleware(['auth'])->group(function(){
+    Route::get('/system-settings', [App\Http\Controllers\SystemSettingsController::class, 'index'])->name('settings.index');
+    Route::post('/system-settings/users', [App\Http\Controllers\SystemSettingsController::class, 'storeUser'])->name('settings.users.store');
+    Route::delete('/system-settings/users/{id}', [App\Http\Controllers\SystemSettingsController::class, 'deleteUser'])->name('settings.users.delete');
+});
+
 require __DIR__.'/auth.php';
 // قفل التسجيل العام
 Route::get('/register', function () {
