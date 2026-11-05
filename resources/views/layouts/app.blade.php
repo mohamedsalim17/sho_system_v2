@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'sho_system_v2') }}</title>
+    <title>{{ config('app.name', 'النظام المتكامل') }}</title>
     <style>
         *{box-sizing:border-box} body{margin:0;font-family:Tahoma;background:#f1f5f9}
         .navbar{background:#111827;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
@@ -20,7 +20,7 @@
 </head>
 <body>
     <div class="navbar">
-        <div><strong>sho_system_v2</strong></div>
+       <div><strong>{{ $companyInfo->name ?? 'sho_system_v2' }}</strong></div>
         <div>
             <a href="{{ route('dashboard') }}">الرئيسية</a>
             <a href="{{ route('employees.index') }}">الموظفون</a>
@@ -29,8 +29,9 @@
             <a href="{{ route('invoices.index') }}">الفواتير</a>
             <form method="POST" action="{{ route('logout') }}" style="display:inline">
                 @csrf
+                 <a href="{{ url('/main') }}" class="btn btn-secondary">رجوع للرئيسية</a>
                 <button type="submit" style="background:#dc2626;margin-right:10px">خروج</button>
-            </form>
+         </form> 
         </div>
     </div>
 

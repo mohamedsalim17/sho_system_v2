@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام الادارة</title>
+<title>{{ $companyInfo->name ?? 'نظام الادارة' }}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma, sans-serif}
 body{background:#f6f7fb; direction:rtl;}
@@ -28,8 +28,8 @@ th{background:#111;color:#fff}
 </head>
 <body>
 <div class="navbar">
-  <a href="/">🏠 الرئيسية</a>
-  <a href="{{ route('system-settings.index') }}" style="background:#111;color:#fff;padding:8px 15px;border-radius:20px;">⚙️ ضبط النظام</a>
+<a href="/" style="font-weight:bold; color:#fff;">{{ $companyInfo->name ?? 'الرئيسية' }}</a>
+  <a href="/system-settings" style="background:#111;color:#fff;padding:8px 15px;border-radius:20px; text-decoration:none">⚙️ ضبط النظام</a>
   <a href="/employees">الموظفين</a>
   <a href="/customers">العملاء</a>
   <a href="/products">المخزون</a>

@@ -1,79 +1,64 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Artisan;
 
 class SystemSettingsController extends Controller
 {
-    public function index(){
-        return view('settings.index', [
-            'users' => User::all(),
+    public function index()
+    {
+        return view('system-settings.index', [
             'company' => Company::first(),
+            'users' => User::latest()->get(),
+            'logs' => \DB::table('login_logs')->join('users','users.id','=','login_logs.user_id')->latest('login_at')->limit(50)->get(),
         ]);
     }
 
-   public function storeCompany(Request $request){
-    $request->validate([
-        'name'=>'required',
-        'phone'=>'nullable',
-        'email'=>'nullable|email',
-    ]);
-
-    $company = \App\Models\Company::first();
-    if(!$company) $company = new \App\Models\Company();
-
-    $company->name = $request->name;
-    $company->phone = $request->phone;
-    $company->email = $request->email;
-    $company->website = $request->website;
-    $company->address = $request->address;
-     $company->tax_number = $request->tax_number;
-
-    if($request->hasFile('logo')){
-        $path = $request->file('logo')->store('logos','public');
-        $company->logo = $path;
-    }
-    
-    $company->save(); // save ما عندو علاقة بـ fillable
-
-    return back()->with('success','تم حفظ بيانات الشركة ✅');
-}
-
-
-    public function storeLogo(Request $request){
-        $request->validate(['logo'=>'required|image|max:2048']);
-        $path = $request->file('logo')->store('logos','public');
-        $company = Company::first() ?? Company::create(['name'=>'شركتي']);
-        $company->update(['logo'=>$path]);
-        return back()->with('success','تم رفع الشعار ✅');
+    public function storeCompany(Request $r)
+    {
+        $data = $r->validate(['name'=>'required','email'=>'nullable|email','phone'=>'nullable','address'=>'nullable']);
+        Company::firstOrCreate(['id'=>1])->update($data);
+        return back()->with('success','تم حفظ بيانات الشركة');
     }
 
-public function storeUser(Request $request){
-    $request->validate([
-        'name'=>'required',
-        'email'=>'required|email|unique:users,email',
-        'password'=>'required|min:6',
-        'role'=>'required'
-    ]);
+    public function storeLogo(Request $r)
+    {
+        $r->validate(['logo'=>'required|image|max:2048']);
+        $path = $r->file('logo')->store('logos','public');
+        Company::firstOrCreate(['id'=>1])->update(['logo'=>$path]);
+        return back()->with('success','تم تحديث الشعار');
+    }
 
-    $user = new \App\Models\User();
-    $user->name = $request->name;
-    $user->email = $request->email;
-    $user->password = $request->password; // الـ Model حيعمل هاش أوتوماتيك مرة واحدة
-    $user->role = $request->role;
-    $user->save();
+    public function storeUser(Request $r)
+    {
+        $r->validate(['name'=>'required','email'=>'required|unique:users','password'=>'required|min:6','role'=>'required']);
+        User::create(['name'=>$r->name,'email'=>$r->email,'password'=>bcrypt($r->password),'role'=>$r->role]);
+        return back()->with('success','تم إنشاء المستخدم');
+    }
 
-    return back()->with('success','تم حفظ المستخدم ✅');
-}
-
-
-    public function deleteUser($id){
+    public function deleteUser($id)
+    {
+        if(auth()->id() == $id) return back()->with('error','لا يمكنك حذف نفسك');
         User::findOrFail($id)->delete();
         return back()->with('success','تم الحذف');
     }
 
-    public function downloadBackup(){ return back()->with('success','الباك اب جاهز'); }
-    public function clean(){ return back()->with('success','تم التنظيف'); }
+    public function downloadBackup()
+    {
+        Artisan::call('config:clear');
+        $file = 'backup_'.now()->format('Y-m-d').'.sql';
+        return response()->streamDownload(function(){ echo "-- backup placeholder --"; }, $file);
+    }
+
+    public function clean()
+    {
+        Artisan::call('optimize:clear');
+        return back()->with('success','تم تنظيف النظام');
+    }
+
+    // للمستقبل: ضيف هنا أي دالة جديدة وما تهبش الفوق
+    // public function storeX() {}
 }

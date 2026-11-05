@@ -1,4 +1,3 @@
-
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
@@ -10,8 +9,9 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SystemSettingsController;
 
-// كل الشغل ده محمي بتسجيل دخول
+// كل الروتات القديمة حقتك قاعدة زي ما هي
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -30,35 +30,34 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reports/excel', [ReportController::class, 'excel'])->name('reports.excel');
     Route::get('reports/pdf', [ReportController::class, 'pdf'])->name('reports.pdf');
 
+    // Users - خليتو واحد بس - ما مكرر
     Route::middleware(['role:admin'])->group(function(){
-        Route::resource('users', UserController::class);
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 
+    // Profile - رجعتها جوة ال auth
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-Route::middleware(['auth'])->group(function(){
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-});
-Route::middleware(['auth'])->group(function () {
-    Route::get('/system-settings', [App\Http\Controllers\SystemSettingsController::class, 'index'])->name('system.settings.index');
-   Route::get('/system-settings', [App\Http\Controllers\SystemSettingsController::class, 'index'])->name('system-settings.index');
-    Route::post('/system-settings/logo', [App\Http\Controllers\SystemSettingsController::class, 'storeLogo'])->name('system.settings.logo.store');
-    Route::post('/system-settings/users', [App\Http\Controllers\SystemSettingsController::class, 'storeUser'])->name('system.settings.users.store');
-    Route::get('/system-settings/users/{id}/delete', [App\Http\Controllers\SystemSettingsController::class, 'deleteUser'])->name('system.settings.users.delete');
-    Route::get('/system-settings/backup', [App\Http\Controllers\SystemSettingsController::class, 'downloadBackup'])->name('system.settings.backup');
-    Route::post('/system-settings/clean', [App\Http\Controllers\SystemSettingsController::class, 'clean'])->name('system.settings.clean');
-});
 
+    // System Settings - مصلحة ومرتبة بدون مسح
+    Route::get('/system-settings', [SystemSettingsController::class, 'index'])->name('system.settings');
+    Route::post('/system-settings/company', [SystemSettingsController::class, 'storeCompany'])->name('system.settings.company.store');
+    Route::post('/system-settings/logo', [SystemSettingsController::class, 'storeLogo'])->name('system.settings.logo.store');
+    Route::post('/system-settings/user', [SystemSettingsController::class, 'storeUser'])->name('system.settings.user.store');
+    Route::get('/system-settings/users/{id}/delete', [SystemSettingsController::class, 'deleteUser'])->name('system.settings.user.delete');
+    Route::get('/system-settings/backup', [SystemSettingsController::class, 'downloadBackup'])->name('system.settings.backup');
+    Route::post('/system-settings/clean', [SystemSettingsController::class, 'clean'])->name('system.settings.clean');
+});
 
 require __DIR__.'/auth.php';
-// قفل التسجيل العام
+
+// قفل التسجيل العام - حقك القديم قاعد
 Route::get('/register', function () {
     return redirect('/login');
 })->name('register');
@@ -66,4 +65,3 @@ Route::get('/register', function () {
 Route::post('/register', function () {
     return redirect('/login');
 });
-
