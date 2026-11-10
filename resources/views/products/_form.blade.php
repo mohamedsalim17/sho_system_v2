@@ -1,41 +1,44 @@
+@if($errors->any())
+    <div class="form-errors" role="alert">
+        <strong>يرجى مراجعة الحقول التالية:</strong>
+        <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+    </div>
+@endif
 
-<div class="
-"></div>@extends('layouts.app')
+<form action="{{ isset($product) ? route('products.update', $product) : route('products.store') }}" method="POST" class="data-form">
+    @csrf
+    @if(isset($product)) @method('PUT') @endif
 
-@section('content')
-<div class="row">
-    <div class="col-md-6 mb-3">
-        <label>اسم الصنف *</label>
-        <input type="text" name="name" value="{{ old('name', $product->name ?? '') }}" class="form-control" required>
-    </div>
-    <div class="col-md-3 mb-3">
-        <label>الفئة</label>
-        <input type="text" name="category" value="{{ old('category', $product->category ?? '') }}" class="form-control" placeholder="دواء، مستحضر...">
-    </div>
-    <div class="col-md-3 mb-3">
-        <label>الوحدة</label>
-        <select name="unit" class="form-control">
-            <option value="قطعة" {{ ($product->unit ?? '')=='قطعة'?'selected':'' }}>قطعة</option>
-            <option value="علبة" {{ ($product->unit ?? '')=='علبة'?'selected':'' }}>علبة</option>
-            <option value="شريط" {{ ($product->unit ?? '')=='شريط'?'selected':'' }}>شريط</option>
-        </select>
-    </div>
-    <div class="col-md-3 mb-3">
-        <label>سعر الشراء</label>
-        <input type="number" step="0.01" name="buy_price" value="{{ old('buy_price', $product->buy_price ?? '') }}" class="form-control">
-    </div>
-    <div class="col-md-3 mb-3">
-        <label>سعر البيع *</label>
-        <input type="number" step="0.01" name="price" value="{{ old('price', $product->price ?? '') }}" class="form-control" required>
-    </div>
-    <div class="col-md-2 mb-3">
-        <label>الكمية *</label>
-        <input type="number" name="quantity" value="{{ old('quantity', $product->quantity ?? '') }}" class="form-control" required>
-    </div>
-    <div class="col-md-4 mb-3">
-        <label>باركود</label>
-        <input type="text" name="barcode" value="{{ old('barcode', $product->barcode ?? '') }}" class="form-control">
-    </div>
-</div>
+    <section class="form-section">
+        <h2>بيانات المنتج</h2>
+        <div class="form-fields">
+            <div class="field"><label for="product-name">اسم المنتج <span>*</span></label><input id="product-name" name="name" value="{{ old('name', $product->name ?? '') }}" maxlength="255" required autofocus></div>
+            <div class="field"><label for="product-category">الفئة</label><input id="product-category" name="category" value="{{ old('category', $product->category ?? '') }}" maxlength="150"></div>
+            <div class="field"><label for="product-barcode">الباركود</label><input id="product-barcode" name="barcode" value="{{ old('barcode', $product->barcode ?? '') }}" maxlength="100"></div>
+            <div class="field"><label for="product-supplier">المورد</label><input id="product-supplier" name="supplier" value="{{ old('supplier', $product->supplier ?? '') }}" maxlength="255"></div>
+            <div class="field"><label for="product-unit">الوحدة</label>
+                @php($unit = old('unit', $product->unit ?? 'قطعة'))
+                <select id="product-unit" name="unit">
+                    @foreach(['قطعة', 'علبة', 'شريط', 'كرتونة', 'كيلوجرام', 'لتر'] as $option)
+                        <option value="{{ $option }}" @selected($unit === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="field"><label for="product-expiry">تاريخ الصلاحية</label><input id="product-expiry" name="expiry_date" type="date" value="{{ old('expiry_date', $product->expiry_date ?? '') }}"></div>
+        </div>
+    </section>
 
-@endsection
+    <section class="form-section">
+        <h2>التسعير والمخزون</h2>
+        <div class="form-fields">
+            <div class="field"><label for="product-purchase-price">سعر الشراء</label><input id="product-purchase-price" name="purchase_price" type="number" step="0.01" min="0" value="{{ old('purchase_price', $product->buy_price ?? '') }}"></div>
+            <div class="field"><label for="product-price">سعر البيع <span>*</span></label><input id="product-price" name="price" type="number" step="0.01" min="0" value="{{ old('price', $product->price ?? '') }}" required></div>
+            <div class="field"><label for="product-quantity">الكمية <span>*</span></label><input id="product-quantity" name="quantity" type="number" step="1" min="0" value="{{ old('quantity', $product->quantity ?? 0) }}" required></div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button class="form-submit" type="submit">{{ isset($product) ? 'حفظ التعديلات' : 'حفظ المنتج' }}</button>
+        <a class="form-cancel" href="{{ route('products.index') }}">إلغاء</a>
+    </div>
+</form>

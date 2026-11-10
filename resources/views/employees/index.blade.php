@@ -1,45 +1,49 @@
 @extends('layouts.main')
+@section('title', 'الموظفون')
 @section('content')
-<div class="container mt-4">
-
-    {{-- رسالة التأكيد - خليها هنا بس --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<main class="form-page">
+    <header class="form-page-heading">
+        <div><h1>الموظفون</h1><p>إدارة بيانات الموظفين والبحث في السجلات.</p></div>
+        @if(in_array(auth()->user()->role, ['admin', 'hr'], true))
+            <div class="form-actions">
+                <a class="form-cancel" href="{{ route('employees.import.create') }}">استيراد ملف</a>
+                <a class="form-submit" href="{{ route('employees.create') }}">إضافة موظف</a>
+            </div>
+        @endif
+    </header>
+    <section class="form-card">
+        <form method="GET" action="{{ route('employees.index') }}" class="report-form report-print-hidden">
+            <div class="field"><label for="employee-search">بحث</label><input id="employee-search" type="search" name="search" value="{{ request('search') }}" placeholder="الاسم أو الرقم الوظيفي أو القسم"></div>
+            <div class="form-actions"><button class="form-submit" type="submit">بحث</button><a class="form-cancel" href="{{ route('employees.index') }}">مسح</a></div>
+        </form>
+        <p class="form-note" style="margin-top:16px">عدد النتائج: {{ number_format($employees->total()) }}</p>
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>الرقم الوظيفي</th><th>الاسم</th><th>الهاتف</th><th>المسمى الوظيفي</th><th>القسم</th><th>الولاية والمدينة</th><th>الإجراءات</th></tr></thead>
+                <tbody>
+                    @forelse($employees as $employee)
+                        <tr>
+                            <td>{{ $employee->employee_no }}</td><td>{{ $employee->name }}</td><td>{{ $employee->phone ?: '-' }}</td>
+                            <td>{{ $employee->job_title ?: '-' }}</td><td>{{ $employee->department ?: '-' }}</td>
+                            <td>{{ trim(($employee->state ?: '').' - '.($employee->city ?: ''), ' -') ?: '-' }}</td>
+                            <td>
+                                <a class="form-cancel" href="{{ route('employees.show', $employee) }}">عرض</a>
+                                @if(in_array(auth()->user()->role, ['admin', 'hr'], true))
+                                    <a class="form-cancel" href="{{ route('employees.edit', $employee) }}">تعديل</a>
+                                    <form action="{{ route('employees.destroy', $employee) }}" method="POST" style="display:inline" onsubmit="return confirm('حذف سجل الموظف؟')">
+                                        @csrf @method('DELETE')
+                                        <button class="form-submit" type="submit">حذف</button>
+                                    </form>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" class="report-empty">لا توجد سجلات موظفين مطابقة.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    @endif
-
-    <div class="card">
-        <table class="table">...
-
-
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-<h2 style="font-size:28px">إدارة الموظفون</h2>
-<a href="/employees/create" style="background:#111;color:#e9d7b0;padding:11px 18px;border-radius:12px;text-decoration:none;font-weight:700">+ إضافة موظف</a>
-</div>
-
-<div style="background:#fff;border-radius:18px;padding:20px">
-<table style="width:100%;border-collapse:collapse">
-<tr style="background:#fbf7ec"><th>#</th><th>الاسم</th><th>الهاتف</th><th>الوظيفة</th><th>الإجراء</th></tr>
-@forelse($employees as $emp)
-<tr style="border-bottom:1px solid #eee;text-align:center">
-<td style="padding:12px">{{$emp->id}}</td>
-<td>{{$emp->name}}</td>
-<td>{{$emp->phone ?? '-'}}</td>
-<td>{{$emp->job ?? '-'}}</td>
-<td style="padding:10px;display:flex;gap:8px;justify-content:center">
-<a href="/employees/{{$emp->id}}/edit" style="background:#f6f0e2;color:#111;padding:7px 12px;border-radius:8px;text-decoration:none;font-size:13px">تعديل</a>
-<form action="{{ route('employees.destroy', $emp->id) }}" method="POST" style="display:inline" onsubmit="return confirm('متأكد تحذف؟')">
-    @csrf
-    @method('DELETE')
-    <button type="submit" style="background:#e74c3c;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer">حذف</button>
-</form>
-</td>
-</tr>
-@empty
-<tr><td colspan="5" style="padding:30px;text-align:center;color:#999">لا يوجد موظفون</td></tr>
-@endforelse
-</table>
-</div>
+        <div class="report-pager">{{ $employees->links() }}</div>
+    </section>
+</main>
 @endsection

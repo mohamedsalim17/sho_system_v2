@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\User;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -47,6 +48,12 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+            return Redirect::route('profile.edit')->withErrors([
+                'account' => 'لا يمكن حذف حساب المدير الأخير في النظام.',
+            ], 'userDeletion');
+        }
 
         Auth::logout();
 

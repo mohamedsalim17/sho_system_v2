@@ -1,73 +1,130 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\Models\Employee;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use PhpOffice\PhpSpreadsheet\Reader\Exception as SpreadsheetReaderException;
 
 class ImportController extends Controller
 {
-    public function import(Request $request)
+    public function create()
     {
-        $request->validate(['file' => 'required|mimes:xlsx,xls,csv']);
-
-        Schema::dropIfExists('employees_1');
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('employees')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-        $file = $request->file('file')->getPathname();
-        $spreadsheet = IOFactory::load($file);
-        $rows = $spreadsheet->getActiveSheet()->toArray();
-        array_shift($rows);
-
-        foreach ($rows as $index => $row) {
-            if (empty($row[2])) continue;
-
-            try {
-                DB::table('employees')->insert([
-                    'employee_no' => isset($row[0])? substr((string)$row[0],0,50) : null,
-                    'national_id' => isset($row[4])? (string)$row[4] : null,
-                    'name' => (string)$row[2],
-                    'phone' => isset($row[10])? (string)$row[10] : null,
-                    'birth_date' => $this->parseDate($row[3]),
-                    'death_date' => $this->parseDate($row[6]),
-                    'death_place' => isset($row[7])? (string)$row[7] : null,
-                    'marital_status'=> 'single',
-                    'job_title' => isset($row[5])? (string)$row[5] : null,
-                    'department' => isset($row[8])? (string)$row[8] : null,
-                    'state' => isset($row[8])? (string)$row[8] : null,
-                    'city' => isset($row[9])? (string)$row[9] : null,
-                    'salary' => 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            } catch (\Exception $e) {
-                // لو صف بايظ وريهو رقم الصف والسبب بدل 500 عامة
-                return back()->withErrors("خطأ في الصف رقم ".($index+2).": ".$e->getMessage()." | البيانات: ".json_encode($row, JSON_UNESCAPED_UNICODE));
-            }
-        }
-
-        return back()->with('success', 'تم الاستيراد بنجاح');
+        return view('employees.import');
     }
 
-    private function parseDate($value)
+    public function import(Request $request)
     {
-        if (empty($value) || $value == '-') return null;
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+        ]);
+
         try {
-            if (is_numeric($value)) {
-                // تاريخ اكسل رقمي
-                if ($value > 0 && $value < 100000) {
-                    return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+            $rows = IOFactory::load($request->file('file')->getPathname())
+                ->getActiveSheet()
+                ->toArray();
+        } catch (SpreadsheetReaderException $exception) {
+            throw ValidationException::withMessages([
+                'file' => 'تعذر قراءة الملف. تحقق من سلامة ملف Excel أو CSV.',
+            ]);
+        }
+
+        array_shift($rows);
+        $imported = 0;
+
+        DB::transaction(function () use ($rows, &$imported) {
+            foreach ($rows as $index => $row) {
+                if (trim((string) ($row[2] ?? '')) === '') {
+                    continue;
                 }
+
+                $employeeNo = trim((string) ($row[0] ?? ''));
+                if ($employeeNo === '') {
+                    $employeeNo = 'IMP-' . str()->uuid();
+                }
+
+                try {
+                    $data = [
+                        'employee_no' => mb_substr($employeeNo, 0, 50),
+                        'national_id' => $this->cellText($row[4] ?? null),
+                        'name' => trim((string) $row[2]),
+                        'phone' => $this->cellText($row[10] ?? null),
+                        'birth_date' => $this->parseDate($row[3] ?? null),
+                        'death_date' => $this->parseDate($row[6] ?? null),
+                        'death_place' => $this->cellText($row[7] ?? null),
+                        'marital_status' => 'single',
+                        'job_title' => $this->cellText($row[5] ?? null),
+                        'department' => $this->cellText($row[8] ?? null),
+                        'state' => $this->cellText($row[8] ?? null),
+                        'city' => $this->cellText($row[9] ?? null),
+                        'salary' => 0,
+                    ];
+                } catch (\InvalidArgumentException $exception) {
+                    throw ValidationException::withMessages([
+                        'file' => 'التاريخ غير صالح في الصف رقم ' . ($index + 2) . '.',
+                    ]);
+                }
+
+                $validator = Validator::make($data, [
+                    'employee_no' => ['required', 'string', 'max:50', 'unique:employees,employee_no'],
+                    'national_id' => ['nullable', 'string', 'max:255', 'unique:employees,national_id'],
+                    'name' => ['required', 'string', 'max:255'],
+                    'phone' => ['nullable', 'string', 'max:30'],
+                    'birth_date' => ['nullable', 'date'],
+                    'death_date' => ['nullable', 'date'],
+                    'death_place' => ['nullable', 'string', 'max:255'],
+                    'marital_status' => ['required', 'in:single,married'],
+                    'job_title' => ['nullable', 'string', 'max:255'],
+                    'department' => ['nullable', 'string', 'max:255'],
+                    'state' => ['nullable', 'string', 'max:255'],
+                    'city' => ['nullable', 'string', 'max:255'],
+                    'salary' => ['nullable', 'numeric', 'min:0'],
+                ]);
+
+                if ($validator->fails()) {
+                    throw ValidationException::withMessages([
+                        'file' => 'بيانات غير صالحة أو رقم وظيفي مكرر في الصف رقم ' . ($index + 2) . '.',
+                    ]);
+                }
+
+                Employee::create($validator->validated());
+                $imported++;
             }
-            // حاول تقرا التاريخ العربي
-            $value = trim(str_replace(['،', 'ـ'], '', $value));
-            return Carbon::parse($value)->format('Y-m-d');
-        } catch (\Exception $e) {
-            return null; // لو ما قدر يقراهو خليهو null وما يوقف الاستيراد
+        });
+
+        return redirect()->route('employees.index')
+            ->with('success', 'تم استيراد ' . $imported . ' موظف دون حذف البيانات الموجودة.');
+    }
+
+    private function cellText($value): ?string
+    {
+        if ($value === null || trim((string) $value) === '' || trim((string) $value) === '-') {
+            return null;
+        }
+
+        return trim((string) $value);
+    }
+
+    private function parseDate($value): ?string
+    {
+        if ($value === null || trim((string) $value) === '' || trim((string) $value) === '-') {
+            return null;
+        }
+
+        try {
+            if (is_numeric($value) && $value > 0 && $value < 100000) {
+                return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+            }
+
+            return Carbon::parse(trim(str_replace(['،', 'ـ'], '', (string) $value)))->format('Y-m-d');
+        } catch (\Throwable $exception) {
+            throw new \InvalidArgumentException('Invalid employee date.', 0, $exception);
         }
     }
 }

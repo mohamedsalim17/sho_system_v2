@@ -1,60 +1,46 @@
 @extends('layouts.main')
+@section('title', 'العملاء')
 @section('content')
-<div class="container py-4" dir="rtl" style="text-align:right">
-  <div class="card border-0 shadow rounded-4 overflow-hidden">
-    <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
-      <h4 class="fw-bold m-0">العملاء ({{ $customers->count() }})</h4>
-      <a href="{{ route('customers.create') }}" class="btn btn-dark rounded-pill">+ عميل جديد</a>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-hover mb-0 text-end align-middle">
-        <thead class="bg-light"><tr><th class="pe-4">#</th><th>الاسم</th><th>الهاتف</th><th>المدينة</th><th class="text-center">الاجراءات</th></tr></thead>
-        <tbody>
-        @foreach($customers as $i => $c)
-          <tr>
-            <td class="pe-4">{{ $i+1 }}</td>
-            <td><b>{{ $c->name }}</b><br><small class="text-muted">{{ $c->national_id }}</small></td>
-            <td>{{ $c->phone }}</td>
-            <td>{{ $c->city }}</td>
-            <td class="text-center">
-              <button onclick="openDetails({{ $c->id }})" class="btn btn-sm btn-dark rounded-pill px-3">التفاصيل</button>
-              <a href="{{ route('customers.edit',$c->id) }}" class="btn btn-sm btn-outline-dark rounded-pill">تعديل</a>
-              
-              <form action="{{ route('customers.destroy',$c->id) }}" method="POST" style="display:inline" onsubmit="return confirm('متأكد عايز تحذف {{ $c->name }} ؟')">
-                @csrf @method('DELETE')
-                <button class="btn btn-sm btn-danger rounded-pill">حذف</button>
-              </form>
-            </td>
-          </tr>
-        @endforeach
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  {{-- المودالات --}}
-  @foreach($customers as $c)
-  <div id="box-{{ $c->id }}" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:9999; align-items:center; justify-content:center; padding:15px;">
-    <div style="background:#fff; width:100%; max-width:480px; border-radius:20px; padding:20px;" dir="rtl">
-      <div class="d-flex justify-content-between mb-3">
-        <h5 class="fw-bold">{{ $c->name }}</h5>
-        <button onclick="closeDetails({{ $c->id }})" class="btn btn-sm btn-light rounded-circle">✕</button>
-      </div>
-      <div class="bg-light p-2 rounded-3 mb-2"><b>الجنس:</b> {{ $c->gender ?? '-' }} | <b>التعليم:</b> {{ $c->education_level ?? '-' }}</div>
-      <div class="bg-light p-2 rounded-3 mb-2"><b>الوظيفة:</b> {{ $c->job ?? '-' }}</div>
-      <div class="bg-light p-2 rounded-3 mb-2"><b>الرقم الوطني:</b> {{ $c->national_id }}</div>
-      <div class="bg-light p-2 rounded-3 mb-2"><b>الولاية:</b> {{ $c->state }} - {{ $c->city }}</div>
-      <div class="bg-light p-2 rounded-3 mb-3"><b>العنوان:</b> {{ $c->address ?? '-' }}</div>
-      <button onclick="closeDetails({{ $c->id }})" class="btn btn-dark w-100 rounded-pill">إغلاق</button>
-    </div>
-  </div>
-  @endforeach
-
-  <script>
-    function openDetails(id){ document.getElementById('box-'+id).style.display='flex'; }
-    function closeDetails(id){ document.getElementById('box-'+id).style.display='none'; }
-  </script>
-
-</div>
+<main class="form-page">
+    <header class="form-page-heading">
+        <div><h1>العملاء</h1><p>عرض سجلات العملاء والبحث بالاسم أو الهاتف أو الرقم الوطني.</p></div>
+        @if(in_array(auth()->user()->role, ['admin', 'hr'], true))
+            <a class="form-submit" href="{{ route('customers.create') }}">إضافة عميل</a>
+        @endif
+    </header>
+    <section class="form-card">
+        <form method="GET" action="{{ route('customers.index') }}" class="report-form report-print-hidden">
+            <div class="field"><label for="customer-search">بحث</label><input id="customer-search" type="search" name="search" value="{{ request('search') }}" placeholder="الاسم أو الهاتف أو الرقم الوطني"></div>
+            <div class="form-actions"><button class="form-submit" type="submit">بحث</button><a class="form-cancel" href="{{ route('customers.index') }}">مسح</a></div>
+        </form>
+        <p class="form-note" style="margin-top:16px">عدد النتائج: {{ number_format($customers->total()) }}</p>
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الرقم الوطني</th><th>المدينة</th><th>الإجراءات</th></tr></thead>
+                <tbody>
+                    @forelse($customers as $customer)
+                        <tr>
+                            <td>{{ $customers->firstItem() + $loop->index }}</td>
+                            <td>{{ $customer->name }}</td><td>{{ $customer->phone ?: '-' }}</td>
+                            <td>{{ $customer->national_id ?: '-' }}</td><td>{{ $customer->city ?: '-' }}</td>
+                            <td>
+                                <a class="form-cancel" href="{{ route('customers.show', $customer) }}">عرض</a>
+                                @if(in_array(auth()->user()->role, ['admin', 'hr'], true))
+                                    <a class="form-cancel" href="{{ route('customers.edit', $customer) }}">تعديل</a>
+                                    <form action="{{ route('customers.destroy', $customer) }}" method="POST" style="display:inline" onsubmit="return confirm('حذف سجل العميل؟')">
+                                        @csrf @method('DELETE')
+                                        <button class="form-submit" type="submit">حذف</button>
+                                    </form>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="report-empty">لا توجد سجلات عملاء مطابقة.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="report-pager">{{ $customers->links() }}</div>
+    </section>
+</main>
 @endsection

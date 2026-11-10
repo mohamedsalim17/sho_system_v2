@@ -1,22 +1,11 @@
 @extends('layouts.app')
-@if($errors->any())
-<div style="background:#fee2e2;padding:10px;border-radius:8px;margin-bottom:10px;color:#991b1b">
-    {{ $errors->first() }}
-</div>
-@endif
+@section('title', 'تعديل منتج')
 @section('content')
-<div class="card"><h3>إضافة صنف</h3>
-<form action="{{ route('products.update', $product) }}" method="POST">
- @csrf @method('PUT')
- @include('products._form')
-<label>اسم الصنف *</label><input type="text" name="name" value="{{ old('name') }}" class="input" required>
-<label>الباركود</label><input type="text" name="barcode" value="{{ old('barcode') }}" class="input">
-<label>الفئة</label><input type="text" name="category" value="{{ old('category') }}" class="input">
-<label>الوحدة</label><input type="text" name="unit" value="{{ old('unit') }}" class="input" placeholder="قطعة / كرتونة">
-<label>سعر الشراء</label><input type="number" step="0.01" name="purchase_price" value="{{ old('purchase_price') }}" class="input">
-<label>سعر البيع *</label><input type="number" step="0.01" name="price" value="{{ old('price') }}" class="input" required>
-<label>الكمية *</label><input type="number" name="quantity" value="{{ old('quantity',0) }}" class="input" required>
-<label>الوصف</label><textarea name="description" class="input"></textarea>
-<button class="btn btn-primary">حفظ</button> <a href="{{ route('products.index') }}" class="btn btn-secondary">رجوع</a>
-</form></div>
+<main class="form-page">
+    <header class="form-page-heading">
+        <div><h1>تعديل المنتج</h1><p>حدّث البيانات أو كمية المخزون ثم احفظ التغييرات.</p></div>
+        <a class="form-cancel" href="{{ route('products.index') }}">العودة للمخزون</a>
+    </header>
+    <section class="form-card">@include('products._form')</section>
+</main>
 @endsection

@@ -1,59 +1,61 @@
 @extends('layouts.main')
-@section('title', 'إدارة التقارير')
+@section('title', 'مركز التقارير')
 @section('content')
+<main class="report-page">
+    <header class="report-heading">
+        <h1>مركز التقارير</h1>
+        <p>استعرض بيانات النظام، صفِّ النتائج، واطبع تقاريرك أو احفظها محليًا بصيغة PDF.</p>
+    </header>
 
-<div class="container mt-4" style="max-width: 1100px;">
-  <h4 class="fw-bold mb-4">إدارة التقارير</h4>
-  
-  <div class="row g-3">
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius:16px;">
-        <div class="mb-2" style="font-size:28px;">📋</div>
-        <h6 class="fw-bold mb-3">تقرير العملاء</h6>
-        <a href="/reports/customers" class="btn btn-dark w-100" style="border-radius:10px; font-weight:bold;">فتح</a>
-      </div>
-    </div>
+    <section class="report-grid" aria-label="ملخص النظام">
+        <div class="report-stat"><span>إجمالي المبيعات المسجلة</span><strong>{{ number_format($salesTotal, 2) }}</strong></div>
+        <div class="report-stat"><span>الفواتير</span><strong>{{ number_format($invoiceCount) }}</strong></div>
+        <div class="report-stat"><span>العملاء</span><strong>{{ number_format($customerCount) }}</strong></div>
+        <div class="report-stat"><span>الموظفون</span><strong>{{ number_format($employeeCount) }}</strong></div>
+        <div class="report-stat"><span>المنتجات</span><strong>{{ number_format($productCount) }}</strong></div>
+    </section>
 
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius:16px;">
-        <div class="mb-2" style="font-size:28px;">👨‍💼</div>
-        <h6 class="fw-bold mb-3">تقرير الموظفون</h6>
-        <a href="/reports/employees" class="btn btn-dark w-100" style="border-radius:10px; font-weight:bold;">فتح</a>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius:16px;">
-        <div class="mb-2" style="font-size:28px;">📦</div>
-        <h6 class="fw-bold mb-3">تقرير المخزون</h6>
-        <a href="/reports/products" class="btn btn-dark w-100" style="border-radius:10px; font-weight:bold;">فتح</a>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius:16px;">
-        <div class="mb-2" style="font-size:28px;">💰</div>
-        <h6 class="fw-bold mb-3">تقرير المبيعات</h6>
-        <a href="/reports/sales" class="btn btn-dark w-100" style="border-radius:10px; font-weight:bold;">فتح</a>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius:16px;">
-        <div class="mb-2" style="font-size:28px;">📊</div>
-        <h6 class="fw-bold mb-3">التقرير المتخصص</h6>
-        <a href="/reports/custom" class="btn btn-dark w-100" style="border-radius:10px; font-weight:bold;">فتح</a>
-      </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius:16px;">
-        <div class="mb-2" style="font-size:28px;">🔍</div>
-        <h6 class="fw-bold mb-3">تقرير حسب الحقول</h6>
-        <a href="/reports/filter" class="btn btn-dark w-100" style="border-radius:10px; font-weight:bold;">فتح</a>
-      </div>
-    </div>
-  </div>
-</div>
-
+    <section class="report-grid" style="margin-top:20px">
+        <a class="report-card" href="{{ route('reports.sales') }}">
+            <div class="report-card-icon" aria-hidden="true">💰</div>
+            <h2>تقرير المبيعات</h2>
+            <p class="report-muted">الفواتير والإجماليات مع التصفية حسب العميل والفترة.</p>
+        </a>
+        <a class="report-card" href="{{ route('reports.customers') }}">
+            <div class="report-card-icon" aria-hidden="true">👥</div>
+            <h2>تقرير العملاء</h2>
+            <p class="report-muted">بيانات العملاء وعدد الفواتير المسجلة لكل عميل.</p>
+        </a>
+        <a class="report-card" href="{{ route('reports.employees') }}">
+            <div class="report-card-icon" aria-hidden="true">🧑‍💼</div>
+            <h2>تقرير الموظفين</h2>
+            <p class="report-muted">بيانات الموظفين والبحث في سجلاتهم وأقاربهم.</p>
+        </a>
+        <a class="report-card" href="{{ route('reports.products') }}">
+            <div class="report-card-icon" aria-hidden="true">📦</div>
+            <h2>تقرير المخزون</h2>
+            <p class="report-muted">الكميات والأسعار والتنبيه على المنتجات منخفضة المخزون.</p>
+        </a>
+        <a class="report-card" href="{{ route('reports.builder') }}">
+            <div class="report-card-icon" aria-hidden="true">🔎</div>
+            <h2>منشئ التقارير</h2>
+            <p class="report-muted">أنشئ تقارير للموظفين أو العملاء، بما فيها بيانات الوفاة.</p>
+        </a>
+        <a class="report-card" href="{{ route('reports.general') }}">
+            <div class="report-card-icon" aria-hidden="true">📋</div>
+            <h2>التقرير العام</h2>
+            <p class="report-muted">بحث الموظفين وتحديد فترة التعيين.</p>
+        </a>
+        <a class="report-card" href="{{ route('reports.filter') }}">
+            <div class="report-card-icon" aria-hidden="true">🎯</div>
+            <h2>تصفية حسب حقل</h2>
+            <p class="report-muted">تصفية سجلات الموظفين حسب أي حقل متاح.</p>
+        </a>
+        <a class="report-card" href="{{ route('reports.custom') }}">
+            <div class="report-card-icon" aria-hidden="true">🧾</div>
+            <h2>تقرير مبيعات مخصص</h2>
+            <p class="report-muted">تصفية الفواتير حسب العميل والتاريخ.</p>
+        </a>
+    </section>
+</main>
 @endsection

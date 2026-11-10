@@ -1,37 +1,42 @@
 @extends('layouts.app')
+@section('title', 'إنشاء حساب مستخدم')
 @section('content')
-<div style="max-width:600px;margin:auto">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
-    <h2>إنشاء حساب دخول للسيستم</h2>
-    <a href="{{ route('employees.index') }}" style="background:#64748b;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none">رجوع للموظفين</a>
-  </div>
-
-  <div class="card">
-    <form method="POST" action="{{ route('users.store') }}">
-      @csrf
-      <label>اختار الموظف *</label>
-      <select name="employee_id" required>
-        <option value="">-- اختر موظف من القائمة --</option>
-        @foreach($employees as $emp)
-          <option value="{{ $emp->id }}">{{ $emp->name }} - {{ $emp->phone }}</option>
-        @endforeach
-      </select>
-
-      <label>البريد الإلكتروني *</label>
-      <input id="email" type="text" name="email" required placeholder="ahmed@sho.com" style="direction:ltr;text-align:left">
-
-      <label>كلمة المرور *</label>
-      <input type="password" name="password" required>
-
-      <label>الصلاحية *</label>
-      <select name="role" required>
-        <option value="employee">موظف عادي</option>
-        <option value="admin">مدير</option>
-      </select>
-
-      <button type="submit" style="width:100%;margin-top:20px">إنشاء الحساب</button>
-    </form>
-    <p style="font-size:12px;color:#64748b;margin-top:10px">ملاحظة: الحساب بتعمل للموظفين الشغالين بس. العمال وسجل الناس الاتوفت ما بتعمل ليهم حساب.</p>
-  </div>
-</div>
+<main class="form-page">
+    <header class="form-page-heading">
+        <div><h1>إنشاء حساب مستخدم</h1><p>اربط الحساب بموظف وحدد الدور المناسب من الأدوار المعتمدة.</p></div>
+        <a class="form-cancel" href="{{ route('users.index') }}">العودة للحسابات</a>
+    </header>
+    <section class="form-card">
+        @if($errors->any())
+            <div class="form-errors" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+        @endif
+        <form method="POST" action="{{ route('users.store') }}" class="data-form">
+            @csrf
+            <section class="form-section">
+                <h2>بيانات الدخول والصلاحية</h2>
+                <div class="form-fields">
+                    <div class="field"><label for="user-employee">الموظف <span>*</span></label>
+                        <select id="user-employee" name="employee_id" required>
+                            <option value="">اختر الموظف</option>
+                            @foreach($employees as $employee)
+                                <option value="{{ $employee->id }}" @selected((string) old('employee_id') === (string) $employee->id)>{{ $employee->name }} — {{ $employee->employee_no }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="field"><label for="user-email">البريد الإلكتروني <span>*</span></label><input id="user-email" name="email" type="email" value="{{ old('email') }}" maxlength="255" autocomplete="username" required dir="ltr"></div>
+                    <div class="field"><label for="user-role">الدور <span>*</span></label>
+                        <select id="user-role" name="role" required>
+                            <option value="hr" @selected(old('role', 'hr') === 'hr')>الموارد البشرية</option>
+                            <option value="viewer" @selected(old('role') === 'viewer')>مشاهدة فقط</option>
+                            <option value="admin" @selected(old('role') === 'admin')>مدير النظام</option>
+                        </select>
+                    </div>
+                    <div class="field"><label for="user-password">كلمة المرور <span>*</span></label><input id="user-password" name="password" type="password" minlength="8" autocomplete="new-password" required></div>
+                    <div class="field"><label for="user-password-confirmation">تأكيد كلمة المرور <span>*</span></label><input id="user-password-confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" required></div>
+                </div>
+            </section>
+            <div class="form-actions"><button class="form-submit" type="submit">إنشاء الحساب</button><a class="form-cancel" href="{{ route('users.index') }}">إلغاء</a></div>
+        </form>
+    </section>
+</main>
 @endsection

@@ -1,90 +1,90 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    // 1. عرض كل حسابات السيستم
-    public function index(){ 
-        $users = User::with('employee')->latest()->get(); 
-        return view('users.index', compact('users')); 
+    private const ROLES = ['admin', 'hr', 'viewer'];
+
+    public function index()
+    {
+        $users = User::with('employee')->latest()->paginate(25);
+
+        return view('users.index', compact('users'));
     }
 
-    // 2. صفحة إنشاء حساب جديد (براها منفصلة)
-    public function create(){
-        // بجيب بس الموظفين الشغالين وما عندهم حساب
-        // لو ما عندك عمود status شيل سطر where
-        $employees = Employee::whereDoesntHave('user')
-            ->when(true, function($q){
-                // حاول تفلتر المتوفين والعمال المؤقتين
-                if (\Schema::hasColumn('employees', 'status')) {
-                    return $q->whereNotIn('status', ['deceased', 'dead', 'متوفي']);
-                }
-                return $q;
-            })
-            ->get();
+    public function create()
+    {
+        $employees = Employee::whereDoesntHave('user')->orderBy('name')->get();
 
         return view('users.create', compact('employees'));
     }
 
-    // 3. حفظ الحساب الجديد
-    public function store(Request $request){
-        $request->validate([
-            'employee_id' => 'required|exists:employees,id|unique:users,employee_id',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
-            'role' => 'required|in:admin,employee,manager',
-        ],[
-            'employee_id.unique' => 'الموظف ده عندو حساب أصلاً',
-            'email.unique' => 'الإيميل ده مستخدم قبل كده',
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'employee_id' => ['required', 'exists:employees,id', 'unique:users,employee_id'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', Rule::in(self::ROLES)],
         ]);
-
-        $employee = Employee::findOrFail($request->employee_id);
+        $employee = Employee::findOrFail($data['employee_id']);
 
         User::create([
             'name' => $employee->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => $data['role'],
             'employee_id' => $employee->id,
         ]);
 
-        return redirect()->route('users.index')->with('success', 'تم إنشاء حساب لـ: '.$employee->name);
+        return redirect()->route('users.index')->with('success', 'تم إنشاء الحساب وربطه بالموظف.');
     }
 
-    // 4. تعديل حساب
-    public function edit(User $user){
+    public function edit(User $user)
+    {
         return view('users.edit', compact('user'));
     }
 
-    public function update(Request $request, User $user){
-        $request->validate([
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'role' => 'required',
-            'password' => 'nullable|min:6|confirmed'
+    public function update(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'role' => ['required', Rule::in(self::ROLES)],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $user->email = $request->email;
-        $user->role = $request->role;
-        if($request->password){
-            $user->password = Hash::make($request->password);
+        if ($user->is(auth()->user()) && $data['role'] !== 'admin') {
+            return back()->withInput()->withErrors(['role' => 'لا يمكن تغيير صلاحية حساب المدير المستخدم حاليًا.']);
+        }
+
+        $user->email = $data['email'];
+        $user->role = $data['role'];
+        if (filled($data['password'] ?? null)) {
+            $user->password = Hash::make($data['password']);
         }
         $user->save();
 
-        return redirect()->route('users.index')->with('success','تم التعديل');
+        return redirect()->route('users.index')->with('success', 'تم تحديث الحساب.');
     }
 
-    // 5. حذف حساب (ما بحذف سجل الموظف)
-    public function destroy(User $user){
-        // ما تخلي المدير يحذف نفسو
-        if($user->id == auth()->id()){
-            return back()->with('error','ما ممكن تحذف حسابك الحالي');
+    public function destroy(User $user)
+    {
+        if ($user->is(auth()->user())) {
+            return back()->with('error', 'لا يمكن حذف الحساب المستخدم حاليًا.');
         }
+        if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+            return back()->with('error', 'لا يمكن حذف المدير الأخير في النظام.');
+        }
+
         $user->delete();
-        return back()->with('success','تم حذف الحساب، سجل الموظف ما زال موجود');
+
+        return redirect()->route('users.index')->with('success', 'تم حذف الحساب دون حذف سجل الموظف.');
     }
 }
